@@ -1,0 +1,4 @@
+docs/source/_build
+docs/source/_templates
+venv
+.pytest_cache

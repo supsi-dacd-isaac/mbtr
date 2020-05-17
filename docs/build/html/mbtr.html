@@ -1,0 +1,1080 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>mbtr package &mdash; mbtr 0.1.0 documentation</title>
+  
+
+  
+  
+  
+  
+
+  
+  <script type="text/javascript" src="_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="index.html" class="icon icon-home"> mbtr
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <!-- Local TOC -->
+              <div class="local-toc"><ul>
+<li><a class="reference internal" href="#">mbtr package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-mbtr.losses">mbtr.losses module</a></li>
+<li><a class="reference internal" href="#module-mbtr.mgboost">mbtr.mgboost module</a></li>
+<li><a class="reference internal" href="#module-mbtr.utils">mbtr.utils module</a></li>
+<li><a class="reference internal" href="#module-mbtr">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">mbtr</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>mbtr package</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/mbtr.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="mbtr-package">
+<h1>mbtr package<a class="headerlink" href="#mbtr-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-mbtr.losses">
+<span id="mbtr-losses-module"></span><h2>mbtr.losses module<a class="headerlink" href="#module-mbtr.losses" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="mbtr.losses.FourierLoss">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.losses.</code><code class="sig-name descname">FourierLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.FourierLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbtr.losses.Loss" title="mbtr.losses.Loss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.Loss</span></code></a></p>
+<p>Loss for the Fourier regression:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L} = \Vert y - P x\Vert_2^2\]</div>
+<p>where <span class="math notranslate nohighlight">\(P\)</span> is the projection matrix:</p>
+<div class="math notranslate nohighlight">
+\[P=\left[\left[\cos \left(k \frac{2 \pi t}{n_{t}}\right)^{T}, \sin \left(k
+\frac{2 \pi t}{n_{t}}\right)^{T}\right]^{T}\right]_{k \in \mathcal{K}}\]</div>
+<dl class="py method">
+<dt id="mbtr.losses.FourierLoss.eval_optimal_loss">
+<code class="sig-name descname">eval_optimal_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G2</span></em>, <em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.FourierLoss.eval_optimal_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G2</strong> – squared sum of gradients in the current leaf</p></li>
+<li><p><strong>H</strong> – sum of Hessians diags in the current leaf</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal loss, scalar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.FourierLoss.eval_optimal_response">
+<code class="sig-name descname">eval_optimal_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G</span></em>, <em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.FourierLoss.eval_optimal_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate optimal response, given G and H.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> – mean gradient for the current leaf.</p></li>
+<li><p><strong>H</strong> – mean Hessian for the current leaf.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal response under second order loss approximation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.FourierLoss.get_initial_guess">
+<code class="sig-name descname">get_initial_guess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.FourierLoss.get_initial_guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an initial guess for the prediciton. This can be loss-specific.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>y</strong> – target matrix of the training set</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>np.ndarray with initial guess</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.FourierLoss.projection_matrix">
+<code class="sig-name descname">projection_matrix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.FourierLoss.projection_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return projection matrix for the Fourier coefficient estimation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> – number of observations</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>projection matrix P, (2*n_harmonics, n_t) where n_harmonics is the number of harmonics to fit, n_t the</p>
+</dd>
+</dl>
+<p>target dimension</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mbtr.losses.FourierLoss.required_pars">
+<code class="sig-name descname">required_pars</code><em class="property"> = ['n_harmonics']</em><a class="headerlink" href="#mbtr.losses.FourierLoss.required_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.FourierLoss.set_dimension">
+<code class="sig-name descname">set_dimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_dim</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.FourierLoss.set_dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all the properties which depends on the dimension of the target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_dims</strong> – dimension of the target</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mbtr.losses.LatentVariable">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.losses.</code><code class="sig-name descname">LatentVariable</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LatentVariable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbtr.losses.Loss" title="mbtr.losses.Loss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.Loss</span></code></a></p>
+<p>Loss for the hierarchical reconciliation problem, in the form:</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L} = \Vert y - S x\Vert_2^2\]</div>
+<p>where <span class="math notranslate nohighlight">\(S\)</span> is the hierarchy matrix. The initial guess is the mean of the last columns of y.</p>
+<dl class="py method">
+<dt id="mbtr.losses.LatentVariable.compute_H_inv">
+<code class="sig-name descname">compute_H_inv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LatentVariable.compute_H_inv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.LatentVariable.compute_fast_H_hat">
+<code class="sig-name descname">compute_fast_H_hat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LatentVariable.compute_fast_H_hat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.LatentVariable.eval_optimal_loss">
+<code class="sig-name descname">eval_optimal_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yy</span></em>, <em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LatentVariable.eval_optimal_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G2</strong> – squared sum of gradients in the current leaf</p></li>
+<li><p><strong>H</strong> – sum of Hessians diags in the current leaf</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal loss, scalar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.LatentVariable.eval_optimal_response">
+<code class="sig-name descname">eval_optimal_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G</span></em>, <em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LatentVariable.eval_optimal_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate optimal response, given G and H.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> – mean gradient for the current leaf.</p></li>
+<li><p><strong>H</strong> – mean Hessian for the current leaf.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal response under second order loss approximation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.LatentVariable.get_grad_and_hessian_diags">
+<code class="sig-name descname">get_grad_and_hessian_diags</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_hat</span></em>, <em class="sig-param"><span class="n">iteration</span></em>, <em class="sig-param"><span class="n">leaves_idx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LatentVariable.get_grad_and_hessian_diags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the loss gradient and loss Hessian’s diagonals based on the current model estimation y_hat and target y
+matrices. Instead of returning the full Hessian (a 3rd order tensor), the method returns only the Hessian
+diagonals for each observation, stored in a (n_obs, n_t) matrix. These diagonals are then used by the loss to
+reconstruct the full Hessian with appropriate dimensions and structure. Currently, full Hessians inferred by
+data are not supported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – target matrix (n_obs, n_t)</p></li>
+<li><p><strong>y_hat</strong> – current target estimation matrix (n_obs, n_t)</p></li>
+<li><p><strong>iteration</strong> – current number of iteration, generally not needed</p></li>
+<li><p><strong>leaves_idx</strong> – leaves’ indexes for each observation in y, (n_obs, 1). This is needed for example by <a class="reference internal" href="#mbtr.losses.QuadraticQuantileLoss" title="mbtr.losses.QuadraticQuantileLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.QuadraticQuantileLoss</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>grad, hessian_diags tuple, each of which is a (n_obs, n_t) matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.LatentVariable.get_initial_guess">
+<code class="sig-name descname">get_initial_guess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LatentVariable.get_initial_guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>The initial guess is generated from the last columns of the target matrix, as:</p>
+<div class="math notranslate nohighlight">
+\[y_0 = \left( \mathbb{E} y_b \right) S^T\]</div>
+<p>where <span class="math notranslate nohighlight">\(\mathbb{E}\)</span> is the expectation (row-mean), <span class="math notranslate nohighlight">\(S\)</span> is the hierarchy matrix, and <span class="math notranslate nohighlight">\(y_b\)</span>
+stands for the last columns of y, with dimension (n_obs, n_b), where n_b is the number of bottom series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>y</strong> – target matrix of the training set</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>np.ndarray with initial guess</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mbtr.losses.LatentVariable.required_pars">
+<code class="sig-name descname">required_pars</code><em class="property"> = ['S', 'precision']</em><a class="headerlink" href="#mbtr.losses.LatentVariable.required_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.LatentVariable.set_dimension">
+<code class="sig-name descname">set_dimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_dims</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LatentVariable.set_dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>For the latent loss the number of dimensions is equal to the second dimension of the S matrix, and must not
+be inferred from the target</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mbtr.losses.LinRegLoss">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.losses.</code><code class="sig-name descname">LinRegLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LinRegLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbtr.losses.Loss" title="mbtr.losses.Loss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.Loss</span></code></a></p>
+<dl class="py method">
+<dt id="mbtr.losses.LinRegLoss.eval_optimal_loss">
+<code class="sig-name descname">eval_optimal_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LinRegLoss.eval_optimal_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> – gradient for the current leaf.</p></li>
+<li><p><strong>x</strong> – linear regression features for the current leaf.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal loss, scalar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.LinRegLoss.eval_optimal_response">
+<code class="sig-name descname">eval_optimal_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LinRegLoss.eval_optimal_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate optimal response, given G and x. This is done computing a Ridge regression with intercept</p>
+<div class="math notranslate nohighlight">
+\[w = \left(\tilde{x}^T \tilde{x} + \lambda I \right)^{-1} \left(\tilde{x}^T G \right)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\tilde{x}\)</span> is the <span class="math notranslate nohighlight">\(x\)</span> matrix augmented with an unitary column and <span class="math notranslate nohighlight">\(\lambda\)</span> is the
+Ridge coefficient.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> – gradient for the current leaf.</p></li>
+<li><p><strong>x</strong> – linear regression features for the current leaf.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal response under second order loss approximation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.LinRegLoss.set_dimension">
+<code class="sig-name descname">set_dimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_dim</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.LinRegLoss.set_dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all the properties which depends on the dimension of the target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_dims</strong> – dimension of the target</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mbtr.losses.Loss">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.losses.</code><code class="sig-name descname">Loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Loss function class. A loss is defined by its gradient and Hessians.
+Note that if your specific loss funciton requires some additional argument, you can specify it in the
+required_pars. Upon instantiation, this list will be used to check if loss_kwargs contains all the needed
+parameters. Each class inheriting from <a class="reference internal" href="#mbtr.losses.Loss" title="mbtr.losses.Loss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.Loss</span></code></a> must provide an H_inv method, computing the
+inverse of the Hessian.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lambda_weights</strong> – quadratic penalization parameter for the leaves weights</p></li>
+<li><p><strong>lambda_leaves</strong> – quadratic penalization parameter for the number of leaves</p></li>
+<li><p><strong>loss_kwargs</strong> – additional parameters needed for a specific loss type</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="mbtr.losses.Loss.H_inv">
+<code class="sig-name descname">H_inv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss.H_inv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the inverse of the Hessian, given the Hessian’s diagonal of the current leave. The default implements
+MSE inverse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>H</strong> – current leaf Hessian’s diagonal (n_t)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>inv(H), (n_t, n_t)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.Loss.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_hat</span></em>, <em class="sig-param"><span class="n">trees</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluates the overall loss, which is composed by the tree’s loss plus weights and total leaves penalizations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – observations</p></li>
+<li><p><strong>y_hat</strong> – current :class: <cite>mbtr.MBT</cite> estimations</p></li>
+<li><p><strong>trees</strong> – array of fitted trees up to the current iteartion</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tree loss and regularizations loss tuple, scalars</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.Loss.eval_optimal_loss">
+<code class="sig-name descname">eval_optimal_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G2</span></em>, <em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss.eval_optimal_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G2</strong> – squared sum of gradients in the current leaf</p></li>
+<li><p><strong>H</strong> – sum of Hessians diags in the current leaf</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal loss, scalar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.Loss.eval_optimal_response">
+<code class="sig-name descname">eval_optimal_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G</span></em>, <em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss.eval_optimal_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate optimal response, given G and H.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> – mean gradient for the current leaf.</p></li>
+<li><p><strong>H</strong> – mean Hessian for the current leaf.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal response under second order loss approximation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.Loss.get_grad_and_hessian_diags">
+<code class="sig-name descname">get_grad_and_hessian_diags</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_hat</span></em>, <em class="sig-param"><span class="n">iteration</span></em>, <em class="sig-param"><span class="n">leaves_idx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss.get_grad_and_hessian_diags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the loss gradient and loss Hessian’s diagonals based on the current model estimation y_hat and target y
+matrices. Instead of returning the full Hessian (a 3rd order tensor), the method returns only the Hessian
+diagonals for each observation, stored in a (n_obs, n_t) matrix. These diagonals are then used by the loss to
+reconstruct the full Hessian with appropriate dimensions and structure. Currently, full Hessians inferred by
+data are not supported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – target matrix (n_obs, n_t)</p></li>
+<li><p><strong>y_hat</strong> – current target estimation matrix (n_obs, n_t)</p></li>
+<li><p><strong>iteration</strong> – current number of iteration, generally not needed</p></li>
+<li><p><strong>leaves_idx</strong> – leaves’ indexes for each observation in y, (n_obs, 1). This is needed for example by <a class="reference internal" href="#mbtr.losses.QuadraticQuantileLoss" title="mbtr.losses.QuadraticQuantileLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.QuadraticQuantileLoss</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>grad, hessian_diags tuple, each of which is a (n_obs, n_t) matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.Loss.get_initial_guess">
+<code class="sig-name descname">get_initial_guess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss.get_initial_guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an initial guess for the prediciton. This can be loss-specific.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>y</strong> – target matrix of the training set</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>np.ndarray with initial guess</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mbtr.losses.Loss.required_pars">
+<code class="sig-name descname">required_pars</code><em class="property"> = []</em><a class="headerlink" href="#mbtr.losses.Loss.required_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.Loss.set_dimension">
+<code class="sig-name descname">set_dimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_dims</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss.set_dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all the properties which depends on the dimension of the target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_dims</strong> – dimension of the target</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.Loss.tree_loss">
+<code class="sig-name descname">tree_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_hat</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.Loss.tree_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the tree loss (without penalizations)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – observations of the target on the traning set</p></li>
+<li><p><strong>y_hat</strong> – current estimation of the MBT</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tree loss</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mbtr.losses.MSE">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.losses.</code><code class="sig-name descname">MSE</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.MSE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbtr.losses.Loss" title="mbtr.losses.Loss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.Loss</span></code></a></p>
+<p>Mean Squared Error loss, a.k.a. L2, Ordinary Least Squares.</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L} = \Vert y - w\Vert_2^2 + \frac{1}{2} w^T \Lambda w\]</div>
+<p>where <span class="math notranslate nohighlight">\(\Lambda\)</span> is the quadratic punishment matrix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lambda_weights</strong> – quadratic penalization parameter for the leaves weights</p></li>
+<li><p><strong>lambda_leaves</strong> – quadratic penalization parameter for the number of leaves</p></li>
+<li><p><strong>loss_kwargs</strong> – additional parameters needed for a specific loss type</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="mbtr.losses.MSE.eval_optimal_loss">
+<code class="sig-name descname">eval_optimal_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G2</span></em>, <em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.MSE.eval_optimal_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G2</strong> – squared sum of gradients in the current leaf</p></li>
+<li><p><strong>H</strong> – sum of Hessians diags in the current leaf</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal loss, scalar</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.MSE.eval_optimal_response">
+<code class="sig-name descname">eval_optimal_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G</span></em>, <em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.MSE.eval_optimal_response" title="Permalink to this definition">¶</a></dt>
+<dd><p>Evaluate optimal response, given G and H.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>G</strong> – mean gradient for the current leaf.</p></li>
+<li><p><strong>H</strong> – mean Hessian for the current leaf.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>optimal response under second order loss approximation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.MSE.set_dimension">
+<code class="sig-name descname">set_dimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_dim</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.MSE.set_dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all the properties which depends on the dimension of the target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_dims</strong> – dimension of the target</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mbtr.losses.QuadraticQuantileLoss">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.losses.</code><code class="sig-name descname">QuadraticQuantileLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuadraticQuantileLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbtr.losses.Loss" title="mbtr.losses.Loss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.Loss</span></code></a></p>
+<dl class="py method">
+<dt id="mbtr.losses.QuadraticQuantileLoss.H_inv">
+<code class="sig-name descname">H_inv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuadraticQuantileLoss.H_inv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the inverse of the Hessian, given the Hessian’s diagonal of the current leave. The default implements
+MSE inverse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>H</strong> – current leaf Hessian’s diagonal (n_t)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>inv(H), (n_t, n_t)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.QuadraticQuantileLoss.exact_response">
+<code class="sig-name descname">exact_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuadraticQuantileLoss.exact_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.QuadraticQuantileLoss.get_grad_and_hessian_diags">
+<code class="sig-name descname">get_grad_and_hessian_diags</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_hat</span></em>, <em class="sig-param"><span class="n">iteration</span></em>, <em class="sig-param"><span class="n">leaves_idx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuadraticQuantileLoss.get_grad_and_hessian_diags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the loss gradient and loss Hessian’s diagonals based on the current model estimation y_hat and target y
+matrices. Instead of returning the full Hessian (a 3rd order tensor), the method returns only the Hessian
+diagonals for each observation, stored in a (n_obs, n_t) matrix. These diagonals are then used by the loss to
+reconstruct the full Hessian with appropriate dimensions and structure. Currently, full Hessians inferred by
+data are not supported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – target matrix (n_obs, n_t)</p></li>
+<li><p><strong>y_hat</strong> – current target estimation matrix (n_obs, n_t)</p></li>
+<li><p><strong>iteration</strong> – current number of iteration, generally not needed</p></li>
+<li><p><strong>leaves_idx</strong> – leaves’ indexes for each observation in y, (n_obs, 1). This is needed for example by <a class="reference internal" href="#mbtr.losses.QuadraticQuantileLoss" title="mbtr.losses.QuadraticQuantileLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.QuadraticQuantileLoss</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>grad, hessian_diags tuple, each of which is a (n_obs, n_t) matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.QuadraticQuantileLoss.get_initial_guess">
+<code class="sig-name descname">get_initial_guess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuadraticQuantileLoss.get_initial_guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>The initial guess are the alpha quantiles of the target matrix y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>y</strong> – target matrix of the training set</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>np.ndarray with initial guess</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mbtr.losses.QuadraticQuantileLoss.required_pars">
+<code class="sig-name descname">required_pars</code><em class="property"> = ['alphas']</em><a class="headerlink" href="#mbtr.losses.QuadraticQuantileLoss.required_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.QuadraticQuantileLoss.tree_loss">
+<code class="sig-name descname">tree_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_hat</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuadraticQuantileLoss.tree_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the tree loss (without penalizations)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – observations of the target on the traning set</p></li>
+<li><p><strong>y_hat</strong> – current estimation of the MBT</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tree loss</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mbtr.losses.QuantileLoss">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.losses.</code><code class="sig-name descname">QuantileLoss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuantileLoss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbtr.losses.Loss" title="mbtr.losses.Loss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.Loss</span></code></a></p>
+<dl class="py method">
+<dt id="mbtr.losses.QuantileLoss.H_inv">
+<code class="sig-name descname">H_inv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">H</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuantileLoss.H_inv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the inverse of the Hessian, given the Hessian’s diagonal of the current leave. The default implements
+MSE inverse.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>H</strong> – current leaf Hessian’s diagonal (n_t)</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>inv(H), (n_t, n_t)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.QuantileLoss.exact_response">
+<code class="sig-name descname">exact_response</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuantileLoss.exact_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.QuantileLoss.get_grad_and_hessian_diags">
+<code class="sig-name descname">get_grad_and_hessian_diags</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">y_hat</span></em>, <em class="sig-param"><span class="n">iteration</span></em>, <em class="sig-param"><span class="n">leaves_idx</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuantileLoss.get_grad_and_hessian_diags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the loss gradient and loss Hessian’s diagonals based on the current model estimation y_hat and target y
+matrices. Instead of returning the full Hessian (a 3rd order tensor), the method returns only the Hessian
+diagonals for each observation, stored in a (n_obs, n_t) matrix. These diagonals are then used by the loss to
+reconstruct the full Hessian with appropriate dimensions and structure. Currently, full Hessians inferred by
+data are not supported.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – target matrix (n_obs, n_t)</p></li>
+<li><p><strong>y_hat</strong> – current target estimation matrix (n_obs, n_t)</p></li>
+<li><p><strong>iteration</strong> – current number of iteration, generally not needed</p></li>
+<li><p><strong>leaves_idx</strong> – leaves’ indexes for each observation in y, (n_obs, 1). This is needed for example by <a class="reference internal" href="#mbtr.losses.QuadraticQuantileLoss" title="mbtr.losses.QuadraticQuantileLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.QuadraticQuantileLoss</span></code></a>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>grad, hessian_diags tuple, each of which is a (n_obs, n_t) matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.QuantileLoss.get_initial_guess">
+<code class="sig-name descname">get_initial_guess</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuantileLoss.get_initial_guess" title="Permalink to this definition">¶</a></dt>
+<dd><p>The initial guess are the alpha quantiles of the target matrix y.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>y</strong> – target matrix of the training set</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>np.ndarray with initial guess</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.QuantileLoss.quantile_loss">
+<code class="sig-name descname">quantile_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">q_hat</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.QuantileLoss.quantile_loss" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quantile loss function, a.k.a. pinball loss.</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}\epsilon (y,\hat{q})_{\alpha} &amp;= \hat{q}_{\alpha} - y\\\mathcal{L} (y,\hat{q})_{\alpha} &amp;= \epsilon (y,\hat{q})_{\alpha} \left( I_{\epsilon_{\alpha}\geq 0} -\alpha \right)\end{aligned}\end{align} \]</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>y</strong> – observations of the target on the traning set</p></li>
+<li><p><strong>q_hat</strong> – current estimation matrix of the quantiles</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>tree loss</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="mbtr.losses.QuantileLoss.required_pars">
+<code class="sig-name descname">required_pars</code><em class="property"> = ['alphas']</em><a class="headerlink" href="#mbtr.losses.QuantileLoss.required_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mbtr.losses.TimeSmoother">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.losses.</code><code class="sig-name descname">TimeSmoother</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.TimeSmoother" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#mbtr.losses.Loss" title="mbtr.losses.Loss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.Loss</span></code></a></p>
+<p>Time-smoothing loss function. Penalizes the time-derivative of the predicted signal.</p>
+<div class="math notranslate nohighlight">
+\[\mathcal{L} = \frac{1}{2}\Vert y-w\Vert_2^{2} + \frac{1}{2} w^T \left(\lambda_s D^T D
++ \lambda I \right) w\]</div>
+<p>where <span class="math notranslate nohighlight">\(D\)</span> is the second order difference matrix</p>
+<div class="math notranslate nohighlight">
+\[ \begin{align}\begin{aligned}D=\left[\begin{array}{rrrrrr}
+1 &amp; -2 &amp; 1 &amp; &amp; &amp;\\&amp; 1 &amp; -2 &amp; 1 &amp; &amp;\\&amp; &amp; \ddots &amp; \ddots &amp; \ddots &amp;\\&amp; &amp; &amp; 1 &amp; -2 &amp; 1\\&amp; &amp; &amp; &amp; 1 &amp; -2 &amp; 1
+\end{array}\right]\end{aligned}\end{align} \]</div>
+<p>and <span class="math notranslate nohighlight">\(\lambda_s\)</span> is the coefficient for the quadratic penalization of time-derivatives.
+Required parameters: lambda_smooth: coefficient for the quadratic penalization of time-derivatives</p>
+<dl class="py method">
+<dt id="mbtr.losses.TimeSmoother.build_filter_mat">
+<em class="property">static </em><code class="sig-name descname">build_filter_mat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.TimeSmoother.build_filter_mat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Build the second order difference matrix</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n</strong> – target dimension</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>D, second order difference matrix</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.TimeSmoother.compute_fast_H_inv">
+<code class="sig-name descname">compute_fast_H_inv</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.TimeSmoother.compute_fast_H_inv" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="mbtr.losses.TimeSmoother.required_pars">
+<code class="sig-name descname">required_pars</code><em class="property"> = ['lambda_smooth']</em><a class="headerlink" href="#mbtr.losses.TimeSmoother.required_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.TimeSmoother.set_dimension">
+<code class="sig-name descname">set_dimension</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_dim</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.TimeSmoother.set_dimension" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all the properties which depends on the dimension of the target</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_dims</strong> – dimension of the target</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.losses.TimeSmoother.update_smoothing_mat">
+<code class="sig-name descname">update_smoothing_mat</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">smoothing_weights</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.losses.TimeSmoother.update_smoothing_mat" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-mbtr.mgboost">
+<span id="mbtr-mgboost-module"></span><h2>mbtr.mgboost module<a class="headerlink" href="#module-mbtr.mgboost" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="mbtr.mgboost.MBT">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.mgboost.</code><code class="sig-name descname">MBT</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_boosts</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">20</span></em>, <em class="sig-param"><span class="n">early_stopping_rounds</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">3</span></em>, <em class="sig-param"><span class="n">learning_rate</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">val_ratio</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="n">n_q</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">10</span></em>, <em class="sig-param"><span class="n">min_leaf</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em>, <em class="sig-param"><span class="n">loss_type</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'mse'</span></em>, <em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">verbose</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">0</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.MBT" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Multivariate Boosted Tree class. Fits a multivariate tree using boosting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_boosts</strong> – maximum number of boosting rounds. Default: 20</p></li>
+<li><p><strong>early_stopping_rounds</strong> – if the total loss is non-decreasing after early_stopping_rounds, stop training.
+The final model is the one which achieved the lowest loss up to the final iteration.
+Default: 3.</p></li>
+<li><p><strong>learning_rate</strong> – in [0, 1]. A learning rate &lt; 1 helps reducing overfitting. Default: 0.1.</p></li>
+<li><p><strong>val_ratio</strong> – in [0,1]. If provided, the early stop is triggered by the loss computed on a validation set,
+randomly extracted from the training set. The length of the validation set is
+val_ratio * len (training set). Default: 0.</p></li>
+<li><p><strong>n_q</strong> – number of quantiles for the split search. Default: 10.</p></li>
+<li><p><strong>min_leaf</strong> – minimum number of observations in one leaf. This parameter greatly affect generalization abilities.
+Default: 100.</p></li>
+<li><p><strong>loss_type</strong> – <p>loss type for choosing the best splits. Currently the following losses are implemented:</p>
+<p>mse: mean squared error loss, a.k.a. L2, ordinary least squares</p>
+<p>time_smoother: mse with an additional penalization on the second order differences of the response
+function. Requires to pass also lambda_smooth parameter.</p>
+<p>latent_variable: generate response function of dimension n_t from an arbitrary linear combination
+of n_r responses. This requires to pass also S and precision pars.</p>
+<p>linear_regression: mse with linear response function. Using this loss function, when calling fit
+and predict methods, one must also pass x_lr as additional argument, which is the matrix of
+features used to train the linear response inside the leaf (which can be different from the
+features used to grow the tree, x).</p>
+<p>fourier: mse with linear response function, fitted on the first n_harmonics (where the
+fundamental has wave-lenght equal to the target output). This requires to pass also the
+n_harmonics parameter.</p>
+<p>quantile: quantile loss function, a.k.a. pinball loss. This requires to pass also the alphas
+parameter, a list of quantiles to be fitted.</p>
+<p>quadratic_quantile: quadratic quantile loss function tailored for trees. It has a non-discontinuos
+derivative. This requires to pass also the alphas parameter, a list of quantiles to be fitted.</p>
+</p></li>
+<li><p><strong>lambda_weights</strong> – coefficient for the quadratic regularization of the response’s parameters. Default: 0.1</p></li>
+<li><p><strong>lambda_leaves</strong> – coefficient for the quadratic regularization of the total number of leaves. This is only used
+when the Tree is used as a weak learner by MBT. Default: 0.1</p></li>
+<li><p><strong>verbose</strong> – in {0,1}. If set to 1, the MBT return fitting information at each iteration.</p></li>
+<li><p><strong>loss_kwargs</strong> – possible additional arguments for the loss function</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="mbtr.mgboost.MBT.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">do_plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">x_lr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.MBT.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.mgboost.MBT.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x_lr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.MBT.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="mbtr.mgboost.Tree">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.mgboost.</code><code class="sig-name descname">Tree</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_q</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">10</span></em>, <em class="sig-param"><span class="n">min_leaf</span><span class="p">:</span> <span class="n">int</span> <span class="o">=</span> <span class="default_value">100</span></em>, <em class="sig-param"><span class="n">loss_type</span><span class="p">:</span> <span class="n">str</span> <span class="o">=</span> <span class="default_value">'mse'</span></em>, <em class="sig-param"><span class="n">lambda_weights</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="n">lambda_leaves</span><span class="p">:</span> <span class="n">float</span> <span class="o">=</span> <span class="default_value">0.1</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">loss_kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.Tree" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Tree class. Fits both univarite and multivariate targets. It implements histogram search for the decision of the
+splitting points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>n_q</strong> – number of quantiles for the split search</p></li>
+<li><p><strong>min_leaf</strong> – minimum number of observations in one leaf. This parameter greatly affect generalization abilities.</p></li>
+<li><p><strong>loss_type</strong> – <p>loss type for choosing the best splits. Currently the following losses are implemented:</p>
+<p>mse: mean squared error loss, a.k.a. L2, ordinary least squares</p>
+<p>time_smoother: mse with an additional penalization on the second order differences of the response
+function. Requires to pass also lambda_smooth parameter.</p>
+<p>latent_variable: generate response function of dimension n_t from an arbitrary linear combination
+of n_r responses. This requires to pass also S and precision pars.</p>
+<p>linear_regression: mse with linear response function. Using this loss function, when calling fit
+and predict methods, one must also pass x_lr as additional argument, which is the matrix of
+features used to train the linear response inside the leaf (which can be different from the
+features used to grow the tree, x).</p>
+<p>fourier: mse with linear response function, fitted on the first n_harmonics (where the
+fundamental has wave-lenght equal to the target output). This requires to pass also the
+n_harmonics parameter.</p>
+<p>quantile: quantile loss function, a.k.a. pinball loss. This requires to pass also the alphas
+parameter, a list of quantiles to be fitted.</p>
+<p>quadratic_quantile: quadratic quantile loss function tailored for trees. It has a non-discontinuos
+derivative. This requires to pass also the alphas parameter, a list of quantiles to be fitted.</p>
+</p></li>
+<li><p><strong>lambda_weights</strong> – coefficient for the quadratic regularization of the response’s parameters</p></li>
+<li><p><strong>lambda_leaves</strong> – coefficient for the quadratic regularization of the total number of leaves. This is only used</p></li>
+</ul>
+</dd>
+</dl>
+<p>when the Tree is used as a weak learner by MBT.
+:param loss_kwargs: possible additional arguments for the loss function</p>
+<dl class="py method">
+<dt id="mbtr.mgboost.Tree.compute_loss">
+<code class="sig-name descname">compute_loss</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">G2_left</span></em>, <em class="sig-param"><span class="n">G2_right</span></em>, <em class="sig-param"><span class="n">H_left</span></em>, <em class="sig-param"><span class="n">H_right</span></em>, <em class="sig-param"><span class="n">j</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.Tree.compute_loss" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.mgboost.Tree.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">hessian</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learning_rate</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">x_lr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.Tree.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.mgboost.Tree.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">x_lr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.Tree.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="mbtr.mgboost.bin_sums">
+<code class="sig-prename descclassname">mbtr.mgboost.</code><code class="sig-name descname">bin_sums</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">edges</span></em>, <em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.bin_sums" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="mbtr.mgboost.leaf_stats">
+<code class="sig-prename descclassname">mbtr.mgboost.</code><code class="sig-name descname">leaf_stats</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">edges</span></em>, <em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">order</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mgboost.leaf_stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-mbtr.utils">
+<span id="mbtr-utils-module"></span><h2>mbtr.utils module<a class="headerlink" href="#module-mbtr.utils" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="mbtr.utils.LightGBMMISO">
+<em class="property">class </em><code class="sig-prename descclassname">mbtr.utils.</code><code class="sig-name descname">LightGBMMISO</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">n_estimators</span></em>, <em class="sig-param"><span class="n">lgb_pars</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.utils.LightGBMMISO" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt id="mbtr.utils.LightGBMMISO.fit">
+<code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.utils.LightGBMMISO.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="mbtr.utils.LightGBMMISO.predict">
+<code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.utils.LightGBMMISO.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="mbtr.utils.check_pars">
+<code class="sig-prename descclassname">mbtr.utils.</code><code class="sig-name descname">check_pars</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">required_pars</span></em>, <em class="sig-param"><span class="o">**</span><span class="n">kwargs</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.utils.check_pars" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="mbtr.utils.download_dataset">
+<code class="sig-prename descclassname">mbtr.utils.</code><code class="sig-name descname">download_dataset</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.utils.download_dataset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-mbtr">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-mbtr" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Lorenzo Nespoli
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
