@@ -1,4 +1,5 @@
 <img src="docs/source/_static/logo.svg"> 
+
 # Multivariate Boosted Tree
 
 ## What is MBTR
