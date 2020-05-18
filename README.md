@@ -12,13 +12,12 @@ enforced.
 
 
 ## Reference
-*Lorenzo Nespoli and Vasco Medici (2020).
-Multivariate Boosted Trees and Applications to Forecasting and Control*
-[arXiv](https://arxiv.org/abs/2003.03835)
 
 If you make use of this software for your work, we would appreciate it if you would cite us:
 
-.. code-block:: bibtex
+*Lorenzo Nespoli and Vasco Medici (2020).
+Multivariate Boosted Trees and Applications to Forecasting and Control*
+[arXiv](https://arxiv.org/abs/2003.03835)
 
     @article{nespoli2020multivariate,
       title={Multivariate Boosted Trees and Applications to Forecasting and Control},
