@@ -158,7 +158,7 @@
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
 <p>Some didactic examples can be found in the <code class="code docutils literal notranslate"><span class="pre">mbtr/examples</span></code> dir. All the examples are based on the
 <a class="reference external" href="https://zenodo.org/record/3463137#.XsIwGR9fiV7">Hierarchical Demand Forecasting Benchmark</a>, which is downloaded at the beginning of the examples. The dataset is
-downloaded only once, successive calls to <code class="xref py py-meth docutils literal notranslate"><span class="pre">mbtr.ut.download_dataset()</span></code> will only read the locally downloaded file.</p>
+downloaded only once, successive calls to <code class="xref py py-meth docutils literal notranslate"><span class="pre">mbtr.ut.load_dataset()</span></code> will only read the locally downloaded file.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">mbtr.utils</span> <span class="k">as</span> <span class="nn">ut</span>
 <span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">hankel</span>
@@ -168,7 +168,7 @@ downloaded only once, successive calls to <code class="xref py py-meth docutils 
 <span class="c1"># --------------------------- Download and format data ----------------------------------------------------------------</span>
 <span class="c1"># download power data from &quot;Hierarchical Demand Forecasting Benchmark for the Distribution Grid&quot; dataset</span>
 <span class="c1"># from https://zenodo.org/record/3463137#.XruXbx9fiV7 if needed</span>
-<span class="n">power_data</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">download_dataset</span><span class="p">()</span>
+<span class="n">power_data</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">load_dataset</span><span class="p">()</span>
 </pre></div>
 </div>
 <div class="section" id="multivariate-forecasts-and-linear-regression">

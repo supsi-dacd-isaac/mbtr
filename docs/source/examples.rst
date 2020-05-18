@@ -2,7 +2,7 @@ Examples
 =============
 Some didactic examples can be found in the :code:`mbtr/examples` dir. All the examples are based on the
 `Hierarchical Demand Forecasting Benchmark`_, which is downloaded at the beginning of the examples. The dataset is
-downloaded only once, successive calls to :meth:`mbtr.ut.download_dataset` will only read the locally downloaded file.
+downloaded only once, successive calls to :meth:`mbtr.ut.load_dataset` will only read the locally downloaded file.
 
 .. _Hierarchical Demand Forecasting Benchmark: https://zenodo.org/record/3463137#.XsIwGR9fiV7
 
@@ -17,7 +17,7 @@ downloaded only once, successive calls to :meth:`mbtr.ut.download_dataset` will 
     # --------------------------- Download and format data ----------------------------------------------------------------
     # download power data from "Hierarchical Demand Forecasting Benchmark for the Distribution Grid" dataset
     # from https://zenodo.org/record/3463137#.XruXbx9fiV7 if needed
-    power_data = ut.download_dataset()
+    power_data = ut.load_dataset()
 
 
 Multivariate forecasts and linear regression

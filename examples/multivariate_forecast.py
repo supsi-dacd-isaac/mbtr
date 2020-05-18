@@ -21,7 +21,7 @@ from mbtr.mbtr import MBT
 # --------------------------- Download and format data ----------------------------------------------------------------
 # download power data from "Hierarchical Demand Forecasting Benchmark for the Distribution Grid" dataset
 # from https://zenodo.org/record/3463137#.XruXbx9fiV7 if needed
-power_data = ut.download_dataset()
+power_data = ut.load_dataset()
 
 total_power = power_data['P_mean']['all'].values.reshape(-1,1)
 

@@ -8,6 +8,8 @@ import tqdm
 import pandas as pd
 from pathlib import Path
 
+PATH_POWER = 'power_data.p'
+
 
 def check_pars(required_pars, **kwargs):
     assert np.all([p in kwargs.keys() for p in required_pars]), 'Some of' \
@@ -15,18 +17,19 @@ def check_pars(required_pars, **kwargs):
                                                                 ' missing: {}'.format(required_pars)
 
 
+def load_dataset():
+    if os.path.exists(PATH_POWER):
+        power_data = pk.load(open(PATH_POWER, "rb"))
+    else:
+        power_data = download_dataset()
+    return power_data
+
+
 def download_dataset():
-    rel_path = os.path.dirname(__file__)
-    path_power = os.path.join(rel_path, r"../data/power_data.p")
-    try:
-        power_data = pk.load(open(path_power, "rb"))
-    except:
-        Path("../data").mkdir(parents=True, exist_ok=True)
-        print('#' * 20 + '    Downloading example dataset    ' + '#' * 20)
-        power = requests.get('https://zenodo.org/record/3463137/files/power_data.p?download=1')
-        with open(path_power, "wb") as f:
-            f.write(power.content)
-        power_data = pk.load(open(path_power, "rb"))
+    power = requests.get('https://zenodo.org/record/3463137/files/power_data.p?download=1')
+    with open(PATH_POWER, "wb") as f:
+        f.write(power.content)
+    power_data = pk.load(open(PATH_POWER, "rb"))
     return power_data
 
 
