@@ -19,6 +19,25 @@ enforced.
 pip install --upgrade git+https://github.com/supsi-dacd-isaac/mbtr.git
 ```
 
+## Usage 
+
+MBT regressor follows the scikit-learn syntax for regressors. Creating a default instance and training it is as simple as:
+```python
+m = MBT().fit(x,y)
+```
+while predictions for the test set are obtained through 
+
+```python
+y_hat = m.predict(x_te)
+```
+The most important parameters are the number of boosts `n_boost`, that is, the number of fitted trees, `learning_rate` and the `loss_type`. An extensive explanation of the different parameters can be found in the documentation. 
+
+
+
+## Documentation 
+
+Documentation and examples on the usage can be found at [docs](https://mbtr.readthedocs.io/en/master/?badge=master).
+
 ## Reference
 
 If you make use of this software for your work, we would appreciate it if you would cite us:
