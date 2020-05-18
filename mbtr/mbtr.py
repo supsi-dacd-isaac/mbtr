@@ -45,6 +45,7 @@ class Tree:
     :param lambda_leaves: coefficient for the quadratic regularization of the total number of leaves. This is only used
     when the Tree is used as a weak learner by MBT.
     :param loss_kwargs: possible additional arguments for the loss function
+
     """
     def __init__(self, n_q: int = 10, min_leaf: int = 100, loss_type: str = "mse",
                  lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
@@ -57,6 +58,20 @@ class Tree:
         self.loss = LOSS_MAP[self.loss_pars['loss_type']](**self.loss_pars)
 
     def fit(self, x, y, hessian=None, learning_rate=1.0, x_lr=None):
+        """
+        Fits a tree using the features specified in the matrix :math:`x\\in\\mathbb{R}^{n_{obs} \\times n_{f}}`, in order
+        to predict the targets in the matrix :math:`y\\in\\mathbb{R}^{n_{obs} \\times n_{t}}`, where :math:`n_{obs}` is
+        the number of observations, :math:`n_{f}` the number of features and :math:`n_{t}` the dimension of the target.
+
+        :param x: feature matrix, np.ndarray.
+        :param y: target matrix, np.ndarray.
+        :param hessian: diagonals of the hessians :math:`\\in\\mathbb{R}^{n_{obs} \\times n_{t}}`. If None, each entry
+        is set equal to one (this will result in the default behaviour under MSE loss). Default: None
+        :param learning_rate: learning rate used by the MBT instance. Default: 1
+        :param x_lr: features for fitting the linear response inside the leaves. This is only required if a LinearLoss
+        is being used.
+
+        """
         # set loss dimensionality
         self.loss.set_dimension(y.shape[1])
 
@@ -68,6 +83,14 @@ class Tree:
             self._fit_node(x, y, 'origin', learning_rate=learning_rate, hessian=hessian)
 
     def predict(self, x, x_lr=None):
+        """
+        Predicts the target based on the feature matrix x (and linear regression features x_lr).
+
+        param: x: feature matrix, np.ndarray.
+        param: x_lr: linear regression feature matrix, np.ndarray.
+
+        :return: target's predictions
+        """
         r = []
         if x_lr is None:
             for x_i in x:
@@ -79,11 +102,13 @@ class Tree:
 
     def _predict_node(self, x:np.ndarray, node, x_lr:np.ndarray=None):
         """
-        Recursively explore the tree and retrieve the response
+        Recursively explores the tree and retrieve the response
+
         :param x: matrix of covariates, (n_obs, n_vars)
         :param node: current node of the tree
         :param x_lr: matrix of linear regression covariates. Only required if we are fitting linear regressions inside
          the nodes
+
         :return: response: matrix of responses
         """
         if self.g.nodes[node]['leaf']:
@@ -103,12 +128,11 @@ class Tree:
 
     def _fit_node(self, x:np.ndarray, y:np.ndarray, node, learning_rate=1.0, hessian=None):
         """
-        Recursively fit the tree using second order approximation (gradient and hessian) of the objective function
+        Recursively fits the tree using second order approximation (gradient and hessian) of the objective function
         :param x: matrix of covariates, (n_obs, n_vars)
         :param y: matrix of target, (n_obs, n_t)
         :param node: current node of the tree
         :param: learning_rate: discount factor. Undershoot the weak learner response to dampen the learning process
-        :return:
         """
         if x.shape[0] < self.min_leaf:
             self.g.nodes[node]['leaf'] = True
@@ -361,7 +385,17 @@ class MBT:
         self.verbose = verbose
 
     def fit(self, x, y, do_plot=False, x_lr=None):
+        """
+         Fits an MBT using the features specified in the matrix :math:`x\\in\\mathbb{R}^{n_{obs} \\times n_{f}}`, in
+         order to predict the targets in the matrix :math:`y\\in\\mathbb{R}^{n_{obs} \\times n_{t}}`,
+         where :math:`n_{obs}` is the number of observations, :math:`n_{f}` the number of features and :math:`n_{t}`
+         the dimension of the target.
 
+        :param x: feature matrix, np.ndarray.
+        :param y: target matrix, np.ndarray.
+        :param x_lr: features for fitting the linear response inside the leaves. This is only required if a LinearLoss
+        is being used.
+        """
         # divide in training and validation sets (has effect only if pars['val_ratio'] was set
         x_tr, x_val, y_tr, y_val, x_lr_tr, x_lr_val = self._validation_split(x, y, x_lr)
         lowest_loss = np.inf
@@ -433,6 +467,14 @@ class MBT:
         return self
 
     def predict(self, x, n=None, x_lr=None):
+        """
+        Predicts the target based on the feature matrix x (and linear regression features x_lr).
+
+        param: x: feature matrix, np.ndarray.
+        param: x_lr: linear regression feature matrix, np.ndarray.
+
+        :return: target's predictions
+        """
         y_hat = self.y_0
         if n is None:
             for tree in self.trees:
@@ -444,9 +486,9 @@ class MBT:
 
     def _get_neg_grad_and_hessian_diags(self, tree, y: np.ndarray, y_hat: np.ndarray, iteration: int, x: np.ndarray):
         """
-        Return the negative gradient at current iteration for all the observations, and a matrix which ith row is
-         the diagonal of the Hessian for the current observation. This matrix is later used by the loss functions to
-         obtain the inverse of the Hessian in each leaf, with proper dimensions.
+        Returns the negative gradient at current iteration for all the observations, and a matrix which ith row is
+        the diagonal of the Hessian for the current observation. This matrix is later used by the loss functions to
+        obtain the inverse of the Hessian in each leaf, with proper dimensions.
 
         :param tree: current fitted tree
         :param y: targets

@@ -934,12 +934,36 @@ when the Tree is used as a weak learner by MBT. Default: 0.1</p></li>
 <dl class="py method">
 <dt id="mbtr.mbtr.MBT.fit">
 <code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">do_plot</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">x_lr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mbtr.MBT.fit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><blockquote>
+<div><p>Fits an MBT using the features specified in the matrix <span class="math notranslate nohighlight">\(x\in\mathbb{R}^{n_{obs} \times n_{f}}\)</span>, in
+order to predict the targets in the matrix <span class="math notranslate nohighlight">\(y\in\mathbb{R}^{n_{obs} \times n_{t}}\)</span>,
+where <span class="math notranslate nohighlight">\(n_{obs}\)</span> is the number of observations, <span class="math notranslate nohighlight">\(n_{f}\)</span> the number of features and <span class="math notranslate nohighlight">\(n_{t}\)</span>
+the dimension of the target.</p>
+</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – feature matrix, np.ndarray.</p></li>
+<li><p><strong>y</strong> – target matrix, np.ndarray.</p></li>
+<li><p><strong>x_lr</strong> – features for fitting the linear response inside the leaves. This is only required if a LinearLoss</p></li>
+</ul>
+</dd>
+</dl>
+<p>is being used.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="mbtr.mbtr.MBT.predict">
 <code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">n</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">x_lr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mbtr.MBT.predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Predicts the target based on the feature matrix x (and linear regression features x_lr).</p>
+<p>param: x: feature matrix, np.ndarray.
+param: x_lr: linear regression feature matrix, np.ndarray.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>target’s predictions</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -987,12 +1011,36 @@ derivative. This requires to pass also the alphas parameter, a list of quantiles
 <dl class="py method">
 <dt id="mbtr.mbtr.Tree.fit">
 <code class="sig-name descname">fit</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">y</span></em>, <em class="sig-param"><span class="n">hessian</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">learning_rate</span><span class="o">=</span><span class="default_value">1.0</span></em>, <em class="sig-param"><span class="n">x_lr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mbtr.Tree.fit" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Fits a tree using the features specified in the matrix <span class="math notranslate nohighlight">\(x\in\mathbb{R}^{n_{obs} \times n_{f}}\)</span>, in order
+to predict the targets in the matrix <span class="math notranslate nohighlight">\(y\in\mathbb{R}^{n_{obs} \times n_{t}}\)</span>, where <span class="math notranslate nohighlight">\(n_{obs}\)</span> is
+the number of observations, <span class="math notranslate nohighlight">\(n_{f}\)</span> the number of features and <span class="math notranslate nohighlight">\(n_{t}\)</span> the dimension of the target.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – feature matrix, np.ndarray.</p></li>
+<li><p><strong>y</strong> – target matrix, np.ndarray.</p></li>
+<li><p><strong>hessian</strong> – diagonals of the hessians <span class="math notranslate nohighlight">\(\in\mathbb{R}^{n_{obs} \times n_{t}}\)</span>. If None, each entry</p></li>
+</ul>
+</dd>
+</dl>
+<p>is set equal to one (this will result in the default behaviour under MSE loss). Default: None
+:param learning_rate: learning rate used by the MBT instance. Default: 1
+:param x_lr: features for fitting the linear response inside the leaves. This is only required if a LinearLoss
+is being used.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt id="mbtr.mbtr.Tree.predict">
 <code class="sig-name descname">predict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x</span></em>, <em class="sig-param"><span class="n">x_lr</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#mbtr.mbtr.Tree.predict" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Predicts the target based on the feature matrix x (and linear regression features x_lr).</p>
+<p>param: x: feature matrix, np.ndarray.
+param: x_lr: linear regression feature matrix, np.ndarray.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>target’s predictions</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 

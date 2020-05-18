@@ -22,3 +22,23 @@ or cloned from the offical repository `mbtr`_
 
 
 .. _mbtr: https://github.com/supsi-dacd-isaac/mbtr
+
+Citation
+********
+If you make use of this software for your work, we would appreciate it if you would cite us:
+
+.. code-block:: bibtex
+
+    @article{nespoli2020multivariate,
+      title={Multivariate Boosted Trees and Applications to Forecasting and Control},
+      author={Nespoli, Lorenzo and Medici, Vasco},
+      journal={arXiv preprint arXiv:2003.03835},
+      year={2020}
+    }
+
+Aknowledgments
+**************
+The authors would like to thank the Swiss Federal Office of Energy (SFOE) and the
+Swiss Competence Center for Energy Research - Future Swiss Electrical Infrastructure (SCCER-FURIES),
+for their financial and technical support to this research work.
+
