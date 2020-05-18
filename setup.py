@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mbtr",
-    version="0.1.0",
+    version="0.1.1",
     author="Lorenzo Nespoli",
     author_email="lorenzo.nespoli@supsi.ch",
     description="Multivariate Boosted Trees Regressor package",
@@ -27,7 +27,8 @@ setuptools.setup(
         'twisted>=20.3.0',
         'requests>=2.22.0',
         'lightgbm>=2.3.1',
-        'pandas>=1.0.3'
+        'pandas>=1.0.3',
+        'seaborn>=0.10.1'
         ],
     python_requires='>=3.7',
 )

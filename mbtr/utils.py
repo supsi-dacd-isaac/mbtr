@@ -7,6 +7,8 @@ import lightgbm as lgb
 import tqdm
 import pandas as pd
 from pathlib import Path
+import seaborn as sb
+import matplotlib.pyplot as plt
 
 PATH_POWER = 'power_data.p'
 
@@ -62,3 +64,10 @@ class LightGBMMISO:
             y.append(m.predict(x).reshape(-1,1))
         y = np.hstack(y)
         return y
+
+
+def set_figure(size, subplots=(1,1), context='paper', style='darkgrid',font_scale = 1, l=0.2, w=0.1, h=0.1, b=0.1):
+    sb.set(context=context,style=style, font_scale=font_scale)
+    fig, ax = plt.subplots(subplots[0],subplots[1], figsize=size)
+    plt.subplots_adjust(left=l, wspace=w, hspace=h, bottom=b)
+    return fig, ax

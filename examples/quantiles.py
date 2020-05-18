@@ -17,6 +17,7 @@ import mbtr.utils as ut
 from mbtr.mbtr import MBT
 from scipy.linalg import hankel
 import matplotlib.pyplot as plt
+from mbtr.utils import set_figure
 
 # --------------------------- Download and format data ----------------------------------------------------------------
 # download power data from "Hierarchical Demand Forecasting Benchmark for the Distribution Grid" dataset
@@ -39,14 +40,18 @@ x_tr, y_tr, x_te, y_te = [x[:n_tr, :], y[:n_tr, :], x[n_tr:, :], y[n_tr:, :]]
 
 
 # visual check on the first 50 samples of features and targets
-plt.figure()
+fig, ax = set_figure((5,4))
+y_min = np.min(y_tr[:50, :]) * 0.9
+y_max = np.max(y_tr[:50, :]) * 1.1
+
 for i in range(50):
-    plt.cla()
-    plt.plot(np.arange(24), x_tr[i,:], label='features')
-    plt.scatter(25, y_tr[i, :], label='multivariate targets', marker='.')
-    plt.xlabel('step ahead [h]')
-    plt.ylabel('P [kW]')
-    plt.legend(loc='upper right')
+    ax.cla()
+    ax.plot(np.arange(24), x_tr[i,:], label='features')
+    ax.scatter(25, y_tr[i, :], label='multivariate targets', marker='.')
+    ax.set_xlabel('step ahead [h]')
+    ax.set_ylabel('P [kW]')
+    ax.legend(loc='upper right')
+    ax.set_ylim(y_min, y_max)
     plt.pause(1e-6)
 plt.close('all')
 
@@ -58,7 +63,10 @@ m = MBT(loss_type='quantile', alphas=alphas, n_boosts=40,
 # --------------------------- Predict and plot ------------------------------------------------------------------------
 
 y_hat = m.predict(x_te)
-fig,ax = plt.subplots(1)
+
+fig, ax = set_figure((5,4))
+y_min = np.min(y_tr[:50, :]) * 0.9
+y_max = np.max(y_tr[:50, :]) * 1.1
 n_q = y_hat.shape[1]
 n_sa = y_te.shape[1]
 n_plot = 300

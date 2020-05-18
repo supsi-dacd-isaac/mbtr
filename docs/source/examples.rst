@@ -13,6 +13,7 @@ downloaded only once, successive calls to :meth:`mbtr.ut.load_dataset` will only
     from scipy.linalg import hankel
     import matplotlib.pyplot as plt
     from mbtr.mbtr import MBT
+    from mbtr.utils import set_figure
 
     # --------------------------- Download and format data ----------------------------------------------------------------
     # download power data from "Hierarchical Demand Forecasting Benchmark for the Distribution Grid" dataset
@@ -52,14 +53,18 @@ we can perform a visual check on the features and target signals:
 .. code-block:: python
 
     # visual check on the first 50 samples of features and targets
-    plt.figure()
+    fig, ax = set_figure((5,4))
+    y_min = np.min(y_tr[:50, :]) * 0.9
+    y_max = np.max(y_tr[:50, :]) * 1.1
+
     for i in range(50):
-        plt.cla()
-        plt.plot(np.arange(24), x_tr[i,:], label='features')
-        plt.plot(np.arange(24) + 24, y_tr[i, :], label='multivariate targets')
-        plt.xlabel('step ahead [h]')
-        plt.ylabel('P [kW]')
-        plt.legend(loc='upper right')
+        ax.cla()
+        ax.plot(np.arange(24), x_tr[i,:], label='features')
+        ax.plot(np.arange(24) + 24, y_tr[i, :], label='multivariate targets')
+        ax.set_xlabel('step ahead [h]')
+        ax.set_ylabel('P [kW]')
+        ax.legend(loc='upper right')
+        ax.set_ylim(y_min, y_max)
         plt.pause(1e-6)
     plt.close('all')
 
@@ -100,15 +105,21 @@ We can now plot some results:
 
 .. code-block:: python
 
+    fig, ax = set_figure((5,4))
+    y_min = np.min(y_tr[:150, :]) * 0.9
+    y_max = np.max(y_tr[:150, :]) * 1.1
+
+
     for i in range(150):
-        plt.cla()
-        plt.plot(np.arange(24), y_te[i,:], label='test')
-        plt.plot(y_hat[i, :], '--', label='mbtr')
-        plt.plot(y_hat_lgb[i, :], '--', label='lgb')
-        plt.plot(y_hat_lin[i, :], '--', label='mbtr-lin')
-        plt.xlabel('step ahead [h]')
-        plt.ylabel('P [kW]')
-        plt.legend(loc='upper right')
+        ax.cla()
+        ax.plot(np.arange(24), y_te[i,:], label='test')
+        ax.plot(y_hat[i, :], '--', label='mbtr')
+        ax.plot(y_hat_lgb[i, :], '--', label='lgb')
+        ax.plot(y_hat_lin[i, :], '--', label='mbtr-lin')
+        ax.set_xlabel('step ahead [h]')
+        ax.set_ylabel('P [kW]')
+        ax.legend(loc='upper right')
+        ax.set_ylim(y_min, y_max)
         plt.pause(1e-6)
 
 and compare the models in term of RMSE:
@@ -160,16 +171,21 @@ We can now plot some results from the different fitted losses:
 
 .. code-block:: python
 
-    for i in range(150):
-        plt.cla()
-        plt.plot(np.arange(24), y_te[i,:], label='test')
-        plt.plot(y_hat_sm[i, :], '--', label='time-smoother')
-        plt.plot(y_hat_fou_3[i, :], '--', label='fourier-3')
-        plt.plot(y_hat_fou_5[i, :], '--', label='fourier-5')
+    fig, ax = set_figure((5,4))
+    y_min = np.min(y_te[:150, :]) * 0.9
+    y_max = np.max(y_te[:150, :]) * 1.1
 
-        plt.xlabel('step ahead [h]')
-        plt.ylabel('P [kW]')
-        plt.legend(loc='upper right')
+    for i in range(150):
+        ax.cla()
+        ax.plot(np.arange(24), y_te[i,:], label='test')
+        ax.plot(y_hat_sm[i, :], '--', label='time-smoother')
+        ax.plot(y_hat_fou_3[i, :], '--', label='fourier-3')
+        ax.plot(y_hat_fou_5[i, :], '--', label='fourier-5')
+
+        ax.set_xlabel('step ahead [h]')
+        ax.set_ylabel('P [kW]')
+        ax.legend(loc='upper right')
+        ax.set_ylim(y_min, y_max)
         plt.pause(1e-6)
 
 Finally, we can compare the models in term of RMSE:
@@ -208,14 +224,18 @@ we plot some training instances of the features and the target to have a visual 
 
 .. code-block:: python
 
-    plt.figure()
+    fig, ax = set_figure((5,4))
+    y_min = np.min(y_tr[:50, :]) * 0.9
+    y_max = np.max(y_tr[:50, :]) * 1.1
+
     for i in range(50):
-        plt.cla()
-        plt.plot(np.arange(24), x_tr[i,:], label='features')
-        plt.scatter(25, y_tr[i, :], label='multivariate targets', marker='.')
-        plt.xlabel('step ahead [h]')
-        plt.ylabel('P [kW]')
-        plt.legend(loc='upper right')
+        ax.cla()
+        ax.plot(np.arange(24), x_tr[i,:], label='features')
+        ax.scatter(25, y_tr[i, :], label='multivariate targets', marker='.')
+        ax.set_xlabel('step ahead [h]')
+        ax.set_ylabel('P [kW]')
+        ax.legend(loc='upper right')
+        ax.set_ylim(y_min, y_max)
         plt.pause(1e-6)
     plt.close('all')
 
@@ -233,7 +253,9 @@ At last, we can plot some predictions for the required quantiles:
 .. code-block:: python
 
     y_hat = m.predict(x_te)
-    fig,ax = plt.subplots(1)
+    fig, ax = set_figure((5,4))
+    y_min = np.min(y_tr[:50, :]) * 0.9
+    y_max = np.max(y_tr[:50, :]) * 1.1
     n_q = y_hat.shape[1]
     n_sa = y_te.shape[1]
     n_plot = 300

@@ -17,6 +17,7 @@ import mbtr.utils as ut
 from scipy.linalg import hankel
 import matplotlib.pyplot as plt
 from mbtr.mbtr import MBT
+from mbtr.utils import set_figure
 
 # --------------------------- Download and format data ----------------------------------------------------------------
 # download power data from "Hierarchical Demand Forecasting Benchmark for the Distribution Grid" dataset
@@ -39,15 +40,19 @@ n_tr = int(len(x)*0.8)
 x_tr, y_tr, x_te, y_te = [x[:n_tr, :], y[:n_tr, :], x[n_tr:, :], y[n_tr:, :]]
 
 # visual check on the first 50 samples of features and targets
-plt.figure()
+fig, ax = set_figure((5,4))
+y_min = np.min(y_tr[:50, :]) * 0.9
+y_max = np.max(y_tr[:50, :]) * 1.1
+
 for i in range(50):
-    plt.cla()
-    plt.plot(np.arange(24), x_tr[i,:], label='features')
-    plt.plot(np.arange(24) + 24, y_tr[i, :], label='multivariate targets')
-    plt.xlabel('step ahead [h]')
-    plt.ylabel('P [kW]')
-    plt.legend(loc='upper right')
-    plt.pause(1e-6)
+    ax.cla()
+    ax.plot(np.arange(24), x_tr[i,:], label='features')
+    ax.plot(np.arange(24) + 24, y_tr[i, :], label='multivariate targets')
+    ax.set_xlabel('step ahead [h]')
+    ax.set_ylabel('P [kW]')
+    ax.legend(loc='upper right')
+    ax.set_ylim(y_min, y_max)
+    plt.pause(1e-2)
 plt.close('all')
 
 
@@ -73,16 +78,21 @@ y_hat_fou_5 = m_fou_5.predict(x_te)
 
 
 # --------------------------- plot first 150 horizons -----------------------------------------------------------------
-for i in range(150):
-    plt.cla()
-    plt.plot(np.arange(24), y_te[i,:], label='test')
-    plt.plot(y_hat_sm[i, :], '--', label='time-smoother')
-    plt.plot(y_hat_fou_3[i, :], '--', label='fourier-3')
-    plt.plot(y_hat_fou_5[i, :], '--', label='fourier-5')
+fig, ax = set_figure((5,4))
+y_min = np.min(y_te[:150, :]) * 0.9
+y_max = np.max(y_te[:150, :]) * 1.1
 
-    plt.xlabel('step ahead [h]')
-    plt.ylabel('P [kW]')
-    plt.legend(loc='upper right')
+for i in range(150):
+    ax.cla()
+    ax.plot(np.arange(24), y_te[i,:], label='test')
+    ax.plot(y_hat_sm[i, :], '--', label='time-smoother')
+    ax.plot(y_hat_fou_3[i, :], '--', label='fourier-3')
+    ax.plot(y_hat_fou_5[i, :], '--', label='fourier-5')
+
+    ax.set_xlabel('step ahead [h]')
+    ax.set_ylabel('P [kW]')
+    ax.legend(loc='upper right')
+    ax.set_ylim(y_min, y_max)
     plt.pause(1e-6)
 
 # --------------------------- Print mean-horizon RMSEs form the models ------------------------------------------------

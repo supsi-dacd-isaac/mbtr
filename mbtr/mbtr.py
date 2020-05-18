@@ -8,7 +8,7 @@ from time import time
 from numba import jit, float32
 from mbtr import LOSS_MAP
 from tqdm import tqdm
-
+from mbtr.utils import set_figure
 
 class Tree:
     """
@@ -403,7 +403,7 @@ class MBT:
         self.trees = []
         t_init = time()
         if do_plot:
-            fig = plt.figure()
+            fig, ax = set_figure((5, 4))
 
         for iter in tqdm(range(self.n_boosts)):
             t0 = time()
@@ -441,19 +441,27 @@ class MBT:
             neg_grad, hessian = self._get_neg_grad_and_hessian_diags(tree, y_tr, y_hat, iter+1, x)
             if do_plot:
                 if type(tree.loss) in [QuantileLoss, QuadraticQuantileLoss]:
-                    plt.cla()
-                    plt.plot(y_hat[:200, :], alpha=0.2, label='predictions')
-                    plt.plot(y[:200, :], label='observations')
-                    plt.xlabel('observation number [-]')
-                    plt.legend(loc='upper right')
-                    plt.title('First 200 samples')
+                    ax.cla()
+                    n_q = y_hat.shape[1]
+                    n_plot = 200
+                    colors = plt.get_cmap('plasma', int(n_q))
+                    for fl in np.arange(np.floor(n_q / 2), dtype=int):
+                        q_low = np.squeeze(y_hat[:n_plot, fl])
+                        q_up = np.squeeze(y_hat[:n_plot, n_q - fl - 1])
+                        x_plot= np.arange(len(q_low))
+                        ax.fill_between(x_plot, q_low, q_up, color=colors(fl), alpha=0.1 + 0.6 * fl / n_q,
+                                        linewidth=0.0)
+
+                    ax.plot(y[:n_plot, :], linewidth=2, label='target')
+                    ax.legend(loc='upper right')
+                    plt.title('Quantiles on first {} samples'.format(n_plot))
                 else:
-                    plt.cla()
-                    plt.plot([np.min(y_tr[:, 0]), np.max(y_tr[:, 0])], [np.min(y_tr[:, 0]), np.max(y_tr[:, 0])], '--')
-                    plt.scatter(y_tr[:, 0], y_hat[:, 0], marker='.', alpha=0.2)
-                    plt.xlabel('observations')
-                    plt.ylabel('predictions')
-                    plt.title('Fit on first y dimension')
+                    ax.cla()
+                    ax.plot([np.min(y_tr[:, 0]), np.max(y_tr[:, 0])], [np.min(y_tr[:, 0]), np.max(y_tr[:, 0])], '--')
+                    ax.scatter(y_tr[:, 0], y_hat[:, 0], marker='.', alpha=0.2)
+                    ax.set_xlabel('observations')
+                    ax.set_ylabel('predictions')
+                    ax.set_title('Fit on first y dimension')
 
                 plt.pause(0.1)
 
