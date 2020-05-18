@@ -66,10 +66,10 @@ class Tree:
         :param x: feature matrix, np.ndarray.
         :param y: target matrix, np.ndarray.
         :param hessian: diagonals of the hessians :math:`\\in\\mathbb{R}^{n_{obs} \\times n_{t}}`. If None, each entry
-        is set equal to one (this will result in the default behaviour under MSE loss). Default: None
+                        is set equal to one (this will result in the default behaviour under MSE loss). Default: None
         :param learning_rate: learning rate used by the MBT instance. Default: 1
         :param x_lr: features for fitting the linear response inside the leaves. This is only required if a LinearLoss
-        is being used.
+                      is being used.
 
         """
         # set loss dimensionality
@@ -394,7 +394,7 @@ class MBT:
         :param x: feature matrix, np.ndarray.
         :param y: target matrix, np.ndarray.
         :param x_lr: features for fitting the linear response inside the leaves. This is only required if a LinearLoss
-        is being used.
+                      is being used.
         """
         # divide in training and validation sets (has effect only if pars['val_ratio'] was set
         x_tr, x_val, y_tr, y_val, x_lr_tr, x_lr_val = self._validation_split(x, y, x_lr)
@@ -470,8 +470,9 @@ class MBT:
         """
         Predicts the target based on the feature matrix x (and linear regression features x_lr).
 
-        param: x: feature matrix, np.ndarray.
-        param: x_lr: linear regression feature matrix, np.ndarray.
+        :param x: feature matrix, np.ndarray.
+        :param n: predict up to the nth fitted tree. If None, predict all the trees. Default: None
+        :param x_lr: linear regression feature matrix, np.ndarray. Only required if LinearLoss has been used.
 
         :return: target's predictions
         """
