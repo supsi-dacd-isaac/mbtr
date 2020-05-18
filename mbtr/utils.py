@@ -6,6 +6,8 @@ import requests
 import lightgbm as lgb
 import tqdm
 import pandas as pd
+from pathlib import Path
+
 
 def check_pars(required_pars, **kwargs):
     assert np.all([p in kwargs.keys() for p in required_pars]), 'Some of' \
@@ -19,6 +21,7 @@ def download_dataset():
     try:
         power_data = pk.load(open(path_power, "rb"))
     except:
+        Path("../data").mkdir(parents=True, exist_ok=True)
         print('#' * 20 + '    Downloading example dataset    ' + '#' * 20)
         power = requests.get('https://zenodo.org/record/3463137/files/power_data.p?download=1')
         with open(path_power, "wb") as f:
