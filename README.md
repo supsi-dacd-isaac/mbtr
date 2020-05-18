@@ -1,5 +1,6 @@
 <img src="docs/source/_static/logo.svg"> 
 
+[![Documentation Status](https://readthedocs.org/projects/mbtr/badge/?version=master)](https://mbtr.readthedocs.io/en/master/?badge=master)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.org/supsi-dacd-isaac/mbtr.svg?branch=master)](https://travis-ci.org/supsi-dacd-isaac/mbtr)
 
