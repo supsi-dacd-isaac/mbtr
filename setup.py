@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mbtr",
-    version="0.0.1",
+    version="0.1.0",
     author="Lorenzo Nespoli",
-    author_email="lorenzo.nespoli@hivepower.tech",
+    author_email="lorenzo.nespoli@supsi.ch",
     description="Multivariate Boosted Trees Regressor package",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://gitlab.com/hive-power/research/mbt",
+    url="https://github.com/supsi-dacd-isaac/mbtr",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",
