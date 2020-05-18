@@ -58,3 +58,5 @@ latex_engine = 'xelatex'
 latex_elements = {
 }
 latex_show_urls = 'footnote'
+
+master_doc = 'index'
