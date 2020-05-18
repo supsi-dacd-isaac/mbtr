@@ -85,7 +85,9 @@
 <li class="toctree-l1"><a class="reference internal" href="introduction.html">Introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mbtr.html">mbtr package</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#multivariate-forecasts-and-linear-regression">Multivariate forecasts and linear regression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#time-smoothing-and-fourier-regression">Time smoothing and Fourier regression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#quantile-loss">Quantile loss</a></li>
 </ul>
 </li>
 </ul>
@@ -154,35 +156,214 @@
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
-<p>Some didactic examples can be found in the <cite>mbtr/examples</cite> dir. All the examples are based on the
+<p>Some didactic examples can be found in the <code class="code docutils literal notranslate"><span class="pre">mbtr/examples</span></code> dir. All the examples are based on the
 <a class="reference external" href="https://zenodo.org/record/3463137#.XsIwGR9fiV7">Hierarchical Demand Forecasting Benchmark</a>, which is downloaded at the beginning of the examples. The dataset is
-downloaded only once, successive calls to <code class="xref py py-meth docutils literal notranslate"><span class="pre">mbr.ut.download_dataset()</span></code>
-.. code-block:: python</p>
-<blockquote>
-<div><p>import numpy as np
-import mbtr.utils as ut
-from scipy.linalg import hankel
-import matplotlib.pyplot as plt
-from mbtr.mbtr import MBT</p>
-<p># ————————— Download and format data —————————————————————-
-# download power data from “Hierarchical Demand Forecasting Benchmark for the Distribution Grid” dataset
-# from <a class="reference external" href="https://zenodo.org/record/3463137#.XruXbx9fiV7">https://zenodo.org/record/3463137#.XruXbx9fiV7</a> if needed
-power_data = ut.download_dataset()</p>
-</div></blockquote>
+downloaded only once, successive calls to <code class="xref py py-meth docutils literal notranslate"><span class="pre">mbtr.ut.download_dataset()</span></code> will only read the locally downloaded file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">mbtr.utils</span> <span class="k">as</span> <span class="nn">ut</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">hankel</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">from</span> <span class="nn">mbtr.mbtr</span> <span class="kn">import</span> <span class="n">MBT</span>
+
+<span class="c1"># --------------------------- Download and format data ----------------------------------------------------------------</span>
+<span class="c1"># download power data from &quot;Hierarchical Demand Forecasting Benchmark for the Distribution Grid&quot; dataset</span>
+<span class="c1"># from https://zenodo.org/record/3463137#.XruXbx9fiV7 if needed</span>
+<span class="n">power_data</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">download_dataset</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="multivariate-forecasts-and-linear-regression">
+<h2>Multivariate forecasts and linear regression<a class="headerlink" href="#multivariate-forecasts-and-linear-regression" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="code docutils literal notranslate"><span class="pre">examples/multivariate_forecast.py</span></code> shows an example of usage of the <a class="reference internal" href="mbtr.html#mbtr.losses.MSE" title="mbtr.losses.MSE"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.MSE</span></code></a> and
+<a class="reference internal" href="mbtr.html#mbtr.losses.LinRegLoss" title="mbtr.losses.LinRegLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.LinRegLoss</span></code></a> losses.</p>
+<p>We start creating the training and test set. We use the P_mean signal as a target, and we want to predict the next day
+ahead only using past values from the same time series. We start downsampling the signal to one hour, and then we embed
+it in a 2-days matrix. The first 24 columns refers to the previous day in time, and are the signals which will be used
+to predict the last 24 columns:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">total_power</span> <span class="o">=</span> <span class="n">power_data</span><span class="p">[</span><span class="s1">&#39;P_mean&#39;</span><span class="p">][</span><span class="s1">&#39;all&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># down-sample it to 1 hour, bin averages</span>
+<span class="n">total_power</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">total_power</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="n">total_power</span><span class="p">)</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">total_power</span><span class="p">)</span> <span class="o">%</span> <span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># embed the signal in a 2-days matrix</span>
+<span class="n">total_power</span> <span class="o">=</span> <span class="n">hankel</span><span class="p">(</span><span class="n">total_power</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="mi">24</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+
+<span class="c1"># create feature matrix and target for the training and test sets</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">total_power</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">24</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">total_power</span><span class="p">[:,</span> <span class="mi">24</span><span class="p">:]</span>
+<span class="n">n_tr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="n">x_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">x_te</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[:</span><span class="n">n_tr</span><span class="p">,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[:</span><span class="n">n_tr</span><span class="p">,</span> <span class="p">:],</span> <span class="n">x</span><span class="p">[</span><span class="n">n_tr</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">n_tr</span><span class="p">:,</span> <span class="p">:]]</span>
+</pre></div>
+</div>
+<p>we can perform a visual check on the features and target signals:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># visual check on the first 50 samples of features and targets</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">),</span> <span class="n">x_tr</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;features&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">)</span> <span class="o">+</span> <span class="mi">24</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;multivariate targets&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step ahead [h]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;P [kW]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Now we are ready to fit an MBT instance. We start fitting a mean squared error loss function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span> <span class="o">+</span> <span class="s1">&#39;    Fitting MBT with mse loss   &#39;</span> <span class="o">+</span> <span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">MBT</span><span class="p">(</span><span class="n">n_boosts</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>  <span class="n">min_leaf</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">lambda_weights</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">do_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_hat</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_te</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As a comparison, we also fit also 24 different <code class="code docutils literal notranslate"><span class="pre">LightGBM</span></code> instances with the utility class
+<code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.ut.LightGBMMISO</span></code> :</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span> <span class="o">+</span> <span class="s1">&#39;    Fitting 24 MISO LightGBMs   &#39;</span> <span class="o">+</span> <span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="n">m_lgb</span> <span class="o">=</span> <span class="n">ut</span><span class="o">.</span><span class="n">LightGBMMISO</span><span class="p">(</span><span class="mi">30</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">)</span>
+<span class="n">y_hat_lgb</span> <span class="o">=</span> <span class="n">m_lgb</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_te</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>As a last comparison, we fit a linear response MBT, using the <a class="reference internal" href="mbtr.html#mbtr.losses.LinRegLoss" title="mbtr.losses.LinRegLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.LinRegLoss</span></code></a>. This class requires as
+additional input a set of features for fitting the linear response inside each leaf. In order to reduce the
+computational time, we only use the mean, maximum, minimum and the first and last values of the original regressors
+matrix <code class="code docutils literal notranslate"><span class="pre">x</span></code> as features for finding the best splits of the trees.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x_build</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span><span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+                     <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">keepdims</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span> <span class="n">x</span><span class="p">[:,[</span><span class="mi">0</span><span class="p">,</span><span class="mi">23</span><span class="p">]]])</span>
+<span class="n">x_build_tr</span><span class="p">,</span> <span class="n">x_build_te</span> <span class="o">=</span> <span class="p">[</span><span class="n">x_build</span><span class="p">[:</span><span class="n">n_tr</span><span class="p">,</span> <span class="p">:],</span><span class="n">x_build</span><span class="p">[</span><span class="n">n_tr</span><span class="p">:,</span> <span class="p">:]]</span>
+<span class="n">m_lin</span> <span class="o">=</span> <span class="n">MBT</span><span class="p">(</span><span class="n">loss_type</span><span class="o">=</span><span class="s1">&#39;linear_regression&#39;</span><span class="p">,</span> <span class="n">n_boosts</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>  <span class="n">min_leaf</span><span class="o">=</span><span class="mi">1500</span><span class="p">,</span>
+            <span class="n">lambda_weights</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_build_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span><span class="n">x_lr</span><span class="o">=</span><span class="n">x_tr</span><span class="p">,</span> <span class="n">do_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_hat_lin</span> <span class="o">=</span> <span class="n">m_lin</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_build_te</span><span class="p">,</span> <span class="n">x_lr</span><span class="o">=</span><span class="n">x_te</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can now plot some results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">150</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">),</span> <span class="n">y_te</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y_hat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;mbtr&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y_hat_lgb</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;lgb&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y_hat_lin</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;mbtr-lin&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step ahead [h]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;P [kW]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>and compare the models in term of RMSE:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mean_rmse</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span> <span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">x</span><span class="o">-</span><span class="n">y</span><span class="p">)</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span><span class="o">**</span><span class="mf">0.5</span><span class="p">)</span>
+<span class="n">rmse_mbt</span> <span class="o">=</span> <span class="n">mean_rmse</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">y_hat</span><span class="p">)</span>
+<span class="n">rmse_lgb</span> <span class="o">=</span> <span class="n">mean_rmse</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">y_hat_lgb</span><span class="p">)</span>
+<span class="n">rmse_mbt_lin</span> <span class="o">=</span> <span class="n">mean_rmse</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">y_hat_lin</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span> <span class="o">+</span> <span class="s1">&#39;    Mean-horizon RMSEs  &#39;</span> <span class="o">+</span> <span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span> <span class="p">)</span>
+<span class="p">[</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{:0.2e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="s1">&#39;mbtr&#39;</span><span class="p">,</span> <span class="s1">&#39;lgb&#39;</span><span class="p">,</span> <span class="s1">&#39;mbtr-lin&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">rmse_mbt</span><span class="p">,</span> <span class="n">rmse_lgb</span><span class="p">,</span> <span class="n">rmse_mbt_lin</span><span class="p">])]</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="time-smoothing-and-fourier-regression">
 <h2>Time smoothing and Fourier regression<a class="headerlink" href="#time-smoothing-and-fourier-regression" title="Permalink to this headline">¶</a></h2>
-<blockquote>
-<div><p>total_power = power_data[‘P_mean’][‘all’].values.reshape(-1,1)
-# down-sample it to 1 hour, bin averages
-total_power = np.mean(total_power[:len(total_power)-len(total_power) % 6].reshape(-1, 6), axis=1, keepdims=True)</p>
-<p># embed the signal in a 2-days matrix
-total_power = hankel(total_power, np.zeros((2 * 24, 1)))</p>
-<p># create feature matrix and target for the training and test sets
-x = total_power[:, :24]
-y = total_power[:, 24:]
-n_tr = int(len(x)*0.8)</p>
-<p>x_tr, y_tr, x_te, y_te = [x[:n_tr, :], y[:n_tr, :], x[n_tr:, :], y[n_tr:, :]]</p>
-</div></blockquote>
+<p>The <code class="code docutils literal notranslate"><span class="pre">examples/fourier_and_smoothing.py</span></code> shows an example of usage of the <a class="reference internal" href="mbtr.html#mbtr.losses.TimeSmoother" title="mbtr.losses.TimeSmoother"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.TimeSmoother</span></code></a> and
+<a class="reference internal" href="mbtr.html#mbtr.losses.FourierLoss" title="mbtr.losses.FourierLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.FourierLoss</span></code></a> losses.
+The first part of the code is identical to the one used in the <code class="code docutils literal notranslate"><span class="pre">examples/multivariate_forecast.py</span></code> example; we
+download the dataset and create the training and test sets. We now use the <code class="code docutils literal notranslate"><span class="pre">time_smoother</span></code> loss function,
+which penalize the second order discrete derivative of the response function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span> <span class="o">+</span> <span class="s1">&#39;    Fitting MBT with smooth loss   &#39;</span> <span class="o">+</span> <span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">m_sm</span> <span class="o">=</span> <span class="n">MBT</span><span class="p">(</span><span class="n">loss_type</span><span class="o">=</span><span class="s1">&#39;time_smoother&#39;</span><span class="p">,</span> <span class="n">lambda_smooth</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">n_boosts</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+           <span class="n">min_leaf</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">lambda_weights</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">do_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_hat_sm</span> <span class="o">=</span> <span class="n">m_sm</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_te</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Keeping all the other MBT parameters unchanged, we can fit two Fourier losses with different number of harmonics:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span> <span class="o">+</span> <span class="s1">&#39;    Fitting MBT with Fourier loss and 3 harmonics    &#39;</span> <span class="o">+</span> <span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="n">m_fou_3</span> <span class="o">=</span> <span class="n">MBT</span><span class="p">(</span><span class="n">loss_type</span><span class="o">=</span><span class="s1">&#39;fourier&#39;</span><span class="p">,</span> <span class="n">n_harmonics</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_boosts</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>
+              <span class="n">min_leaf</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">lambda_weights</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">do_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_hat_fou_3</span> <span class="o">=</span> <span class="n">m_fou_3</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_te</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span> <span class="o">+</span> <span class="s1">&#39;    Fitting MBT with Fourier loss and 5 harmonics    &#39;</span> <span class="o">+</span> <span class="s1">&#39;#&#39;</span><span class="o">*</span><span class="mi">20</span><span class="p">)</span>
+
+<span class="n">m_fou_5</span> <span class="o">=</span> <span class="n">MBT</span><span class="p">(</span><span class="n">loss_type</span><span class="o">=</span><span class="s1">&#39;fourier&#39;</span><span class="p">,</span> <span class="n">n_harmonics</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">n_boosts</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span>  <span class="n">min_leaf</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span>
+              <span class="n">lambda_weights</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">do_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">y_hat_fou_5</span> <span class="o">=</span> <span class="n">m_fou_5</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_te</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>We can now plot some results from the different fitted losses:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">150</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">),</span> <span class="n">y_te</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;test&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y_hat_sm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;time-smoother&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y_hat_fou_3</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fourier-3&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y_hat_fou_5</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;fourier-5&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step ahead [h]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;P [kW]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, we can compare the models in term of RMSE:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mean_rmse</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">y</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">rmse_sm</span> <span class="o">=</span> <span class="n">mean_rmse</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">y_hat_sm</span><span class="p">)</span>
+<span class="n">rmse_fou_3</span> <span class="o">=</span> <span class="n">mean_rmse</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">y_hat_fou_3</span><span class="p">)</span>
+<span class="n">rmse_fou_5</span> <span class="o">=</span> <span class="n">mean_rmse</span><span class="p">(</span><span class="n">y_te</span><span class="p">,</span> <span class="n">y_hat_fou_5</span><span class="p">)</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;#&#39;</span> <span class="o">*</span> <span class="mi">20</span> <span class="o">+</span> <span class="s1">&#39;    Mean-horizon RMSEs  &#39;</span> <span class="o">+</span> <span class="s1">&#39;#&#39;</span> <span class="o">*</span> <span class="mi">20</span><span class="p">)</span>
+<span class="p">[</span><span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{:0.2e}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">s</span><span class="p">))</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="s1">&#39;smoother&#39;</span><span class="p">,</span> <span class="s1">&#39;fourier-3&#39;</span><span class="p">,</span> <span class="s1">&#39;fourier-5&#39;</span><span class="p">],</span> <span class="p">[</span><span class="n">rmse_sm</span><span class="p">,</span> <span class="n">rmse_fou_3</span><span class="p">,</span> <span class="n">rmse_fou_5</span><span class="p">])]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="quantile-loss">
+<h2>Quantile loss<a class="headerlink" href="#quantile-loss" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="code docutils literal notranslate"><span class="pre">examples/quantiles.py</span></code> shows an example of usage of the <a class="reference internal" href="mbtr.html#mbtr.losses.QuantileLoss" title="mbtr.losses.QuantileLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.QuantileLoss</span></code></a> loss.
+In this example we aim at predicting the quantiles of the next step ahead, using the previous 24 hours of the signal as
+covariates. After downloading the dataset as described in the previous example, we build the training and test sets:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># embed the signal in a 2-days matrix</span>
+<span class="n">total_power</span> <span class="o">=</span> <span class="n">hankel</span><span class="p">(</span><span class="n">total_power</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">25</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))[:</span><span class="o">-</span><span class="mi">25</span><span class="p">,</span> <span class="p">:]</span>
+
+<span class="c1"># create feature matrix and target for the training and test sets</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">total_power</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">24</span><span class="p">]</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">total_power</span><span class="p">[:,</span> <span class="mi">24</span><span class="p">:]</span>
+<span class="n">n_tr</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mf">0.8</span><span class="p">)</span>
+<span class="n">x_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">x_te</span><span class="p">,</span> <span class="n">y_te</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span><span class="p">[:</span><span class="n">n_tr</span><span class="p">,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[:</span><span class="n">n_tr</span><span class="p">,</span> <span class="p">:],</span> <span class="n">x</span><span class="p">[</span><span class="n">n_tr</span><span class="p">:,</span> <span class="p">:],</span> <span class="n">y</span><span class="p">[</span><span class="n">n_tr</span><span class="p">:,</span> <span class="p">:]]</span>
+</pre></div>
+</div>
+<p>we plot some training instances of the features and the target to have a visual check:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">cla</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">24</span><span class="p">),</span> <span class="n">x_tr</span><span class="p">[</span><span class="n">i</span><span class="p">,:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;features&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="mi">25</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:],</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;multivariate targets&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step ahead [h]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;P [kW]&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s1">&#39;upper right&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">pause</span><span class="p">(</span><span class="mf">1e-6</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, we can train a <code class="code docutils literal notranslate"><span class="pre">MBT</span></code> instance with a <a class="reference internal" href="mbtr.html#mbtr.losses.QuantileLoss" title="mbtr.losses.QuantileLoss"><code class="xref py py-class docutils literal notranslate"><span class="pre">mbtr.losses.QuantileLoss</span></code></a> loss. Note that this loss requires
+the <code class="code docutils literal notranslate"><span class="pre">alphas</span></code> additional parameter. This is an array of quantiles to be fitted:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">alphas</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <span class="n">MBT</span><span class="p">(</span><span class="n">loss_type</span><span class="o">=</span><span class="s1">&#39;quantile&#39;</span><span class="p">,</span> <span class="n">alphas</span><span class="o">=</span><span class="n">alphas</span><span class="p">,</span> <span class="n">n_boosts</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>
+        <span class="n">min_leaf</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">lambda_weights</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">x_tr</span><span class="p">,</span> <span class="n">y_tr</span><span class="p">,</span> <span class="n">do_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>At last, we can plot some predictions for the required quantiles:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">y_hat</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x_te</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">n_q</span> <span class="o">=</span> <span class="n">y_hat</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">n_sa</span> <span class="o">=</span> <span class="n">y_te</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">n_plot</span> <span class="o">=</span> <span class="mi">300</span>
+<span class="n">colors</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">get_cmap</span><span class="p">(</span><span class="s1">&#39;plasma&#39;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_q</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">fl</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">n_q</span> <span class="o">/</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">):</span>
+    <span class="n">q_low</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_hat</span><span class="p">[:</span><span class="n">n_plot</span><span class="p">,</span> <span class="n">fl</span><span class="p">])</span>
+    <span class="n">q_up</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">y_hat</span><span class="p">[:</span><span class="n">n_plot</span><span class="p">,</span> <span class="n">n_q</span> <span class="o">-</span> <span class="n">fl</span> <span class="o">-</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">q_low</span><span class="p">))</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">fill_between</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">q_low</span><span class="p">,</span> <span class="n">q_up</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="n">colors</span><span class="p">(</span><span class="n">fl</span><span class="p">),</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.1</span> <span class="o">+</span> <span class="mf">0.6</span><span class="o">*</span><span class="n">fl</span><span class="o">/</span><span class="n">n_q</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">y_te</span><span class="p">[:</span><span class="n">n_plot</span><span class="p">],</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;step [h]&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;P [kW]&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Quantiles on first 300 samples&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 </div>
 
