@@ -55,7 +55,7 @@ Multivariate Boosted Trees and Applications to Forecasting and Control*
       year={2020}
     }
 
-## Aknowledgments
+## Acknowledgments
 
 The authors would like to thank the Swiss Federal Office of Energy (SFOE) and the
 Swiss Competence Center for Energy Research - Future Swiss Electrical Infrastructure (SCCER-FURIES),
