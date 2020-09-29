@@ -289,7 +289,7 @@ class LatentVariable(Loss):
         self.lambdas, self.Q = eigh(self.S.T @ self.kwargs['precision'] @ self.S)
         self.Q_inv = np.linalg.inv(self.Q)
         self.H_inv = lambda H: self.compute_H_inv(np.mean(H))
-        self.n_dims = self.S.shape[0]
+        self.n_dims = self.S.shape[1]
 
     def set_dimension(self, n_dims):
         """
