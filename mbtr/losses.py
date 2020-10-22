@@ -481,8 +481,6 @@ class QuadraticQuantileLoss(Loss):
                 norm_r = np.sum(err_leaf[rights_idx]) if np.any(rights_idx) else 1
                 grad_alpha[leaf_idx] = (err_leaf * (-2*k[i] + lefts_idx *(1-alpha-k[i]/norm_l) + rights_idx *(alpha+k[i]/norm_r))).reshape(-1,1)
                 hessian_alpha[leaf_idx] = -(-2*k[i] + lefts_idx *(1-alpha-k[i]/norm_l) + rights_idx *(alpha+k[i]/norm_r) ).reshape(-1,1)
-                if np.any(np.isnan(grad_alpha)):
-                    print('dear lord, here we go again')
             grad.append(grad_alpha)
             hessian_diags.append(hessian_alpha)
         grad = np.hstack(grad)
