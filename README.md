@@ -1,8 +1,10 @@
 <img src="docs/source/_static/logo.svg"> 
 
 [![Documentation Status](https://readthedocs.org/projects/mbtr/badge/?version=master)](https://mbtr.readthedocs.io/en/master/?badge=master)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://travis-ci.org/supsi-dacd-isaac/mbtr.svg?branch=master)](https://travis-ci.org/supsi-dacd-isaac/mbtr)
+[![codecov](https://codecov.io/gh/supsi-dacd-isaac/mbtr/branch/master/graph/badge.svg)](https://codecov.io/gh/supsi-dacd-isaac/mbtr)
+[![Latest Version](https://img.shields.io/pypi/v/mbtr.svg)](https://pypi.python.org/pypi/mbtr/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 # Multivariate Boosted TRee
 
@@ -53,7 +55,7 @@ Multivariate Boosted Trees and Applications to Forecasting and Control*
       year={2020}
     }
 
-## Aknowledgments
+## Acknowledgments
 
 The authors would like to thank the Swiss Federal Office of Energy (SFOE) and the
 Swiss Competence Center for Energy Research - Future Swiss Electrical Infrastructure (SCCER-FURIES),

@@ -368,15 +368,17 @@ class MBT:
     :param lambda_leaves: coefficient for the quadratic regularization of the total number of leaves. This is only used
                           when the Tree is used as a weak learner by MBT. Default: 0.1
     :param verbose: in {0,1}. If set to 1, the MBT return fitting information at each iteration.
+    :param refit: if True, if the loss function has an "exact_response" method, use it to refit the tree
     :param loss_kwargs: possible additional arguments for the loss function
     """
     def __init__(self, n_boosts: int = 20, early_stopping_rounds: int = 3, learning_rate: float = 0.1,
                  val_ratio: int = 0, n_q: int = 10, min_leaf: int = 100, loss_type: str = "mse",
-                 lambda_weights: float = 0.1, lambda_leaves: float = 0.1, verbose: int = 0, **loss_kwargs):
+                 lambda_weights: float = 0.1, lambda_leaves: float = 0.1, verbose: int = 0, refit=True, **loss_kwargs):
         self.n_boosts = n_boosts
         self.early_stopping_rounds = early_stopping_rounds
         self.learning_rate = learning_rate
         self.val_ratio = val_ratio
+        self.refit = refit
         self.tree_pars = {**{'n_q': n_q, 'min_leaf': min_leaf, 'loss_type': loss_type, 'lambda_weights': lambda_weights,
                              'lambda_leaves': lambda_leaves}, **loss_kwargs}
 
@@ -417,7 +419,8 @@ class MBT:
             tree.fit(x_tr, neg_grad, learning_rate=self.learning_rate, hessian=hessian, x_lr=x_lr_tr)
 
             # if loss function has an "exact_response" method, use it to refit the tree
-            tree._refit(x_tr, y_tr - y_hat, self.learning_rate, x_lr=x_lr_tr)
+            if self.refit:
+                tree._refit(x_tr, y_tr - y_hat, self.learning_rate, x_lr=x_lr_tr)
 
             self.trees.append(tree)
             y_hat = y_hat + tree.predict(x_tr,x_lr_tr)

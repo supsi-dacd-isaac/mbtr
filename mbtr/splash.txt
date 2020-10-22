@@ -11,7 +11,7 @@
 ///////////               ///////////
 ///////////               ///////////
 
-Multivariate Boosted TRee (v0.0.1)
+Multivariate Boosted TRee (v0.1.1)
    
 A package developed in SUPSI
 Brought to you by Lorenzo Nespoli
