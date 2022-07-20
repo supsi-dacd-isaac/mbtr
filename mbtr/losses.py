@@ -470,7 +470,7 @@ class QuadraticQuantileLoss(Loss):
     def get_grad_and_hessian_diags(self,y, y_hat, iteration, leaves_idx):
         err = y - y_hat
         grad, hessian_diags = [[],[]]
-        k = np.ones(len(self.alphas))
+        k = np.ones(len(self.alphas)) * 1e5
         for i, alpha in enumerate(self.alphas):
             grad_alpha = np.zeros((len(err),1))
             hessian_alpha = np.zeros((len(err), 1))
@@ -479,8 +479,13 @@ class QuadraticQuantileLoss(Loss):
                 lefts_idx, rights_idx = [err_leaf<=0, err_leaf>0]
                 norm_l = np.sum(err_leaf[lefts_idx]) if np.any(lefts_idx) else 1
                 norm_r = np.sum(err_leaf[rights_idx]) if np.any(rights_idx) else 1
-                grad_alpha[leaf_idx] = (err_leaf * (-2*k[i] + lefts_idx *(1-alpha-k[i]/norm_l) + rights_idx *(alpha+k[i]/norm_r))).reshape(-1,1)
-                hessian_alpha[leaf_idx] = -(-2*k[i] + lefts_idx *(1-alpha-k[i]/norm_l) + rights_idx *(alpha+k[i]/norm_r) ).reshape(-1,1)
+                # next two lines were due to an error in the formula
+                #grad_alpha[leaf_idx] = (err_leaf * (-2*k[i] + lefts_idx *(1-alpha-k[i]/norm_l) + rights_idx *(alpha+k[i]/norm_r))).reshape(-1,1)
+                #hessian_alpha[leaf_idx] = -(-2*k[i] + lefts_idx *(1-alpha-k[i]/norm_l) + rights_idx *(alpha+k[i]/norm_r) ).reshape(-1,1)
+                grad_alpha[leaf_idx] = -((1 - alpha + k[i] * err_leaf / norm_r) * rights_idx
+                                         + (-alpha + k[i] * err_leaf / norm_l) * lefts_idx - 2 * k[i] / n).reshape(-1,
+                                                                                                                   1)
+                hessian_alpha[leaf_idx] = -(k[i] * rights_idx / norm_r + k[i] * lefts_idx / norm_l).reshape(-1, 1)
             grad.append(grad_alpha)
             hessian_diags.append(hessian_alpha)
         grad = np.hstack(grad)

@@ -9,6 +9,8 @@ from numba import jit, float32
 from mbtr import LOSS_MAP
 from tqdm import tqdm
 from mbtr.utils import set_figure
+from copy import deepcopy
+
 
 class Tree:
     """
@@ -411,8 +413,8 @@ class MBT:
             t0 = time()
             tree = Tree(**self.tree_pars)
             if iter == 0:
-                y_hat_val = self._fit_initial_guess(tree, y)
-                y_hat = self._fit_initial_guess(tree, y)
+                y_hat = self._fit_initial_guess(tree, x_tr, y_tr)
+                y_hat_val = np.copy(y_hat)
                 neg_grad, hessian = self._get_neg_grad_and_hessian_diags(tree, y_tr, y_hat, 0, x)
 
             # fit the tree
@@ -521,8 +523,20 @@ class MBT:
         return - grad, hessian_diags
 
     def _fit_initial_guess(self, tree, y) -> np.ndarray:
-        y_0 = tree.loss.get_initial_guess(y)
-        self.y_0 = y_0
+        if type(tree.loss) in [QuantileLoss, QuadraticQuantileLoss]:
+            _tree_pars = deepcopy(self.tree_pars)
+            _tree_pars.update({"loss_type":"mse"})
+            _tree_pars.update({"n_boosts":self.n_boosts})
+            self.detrender = MBT(**_tree_pars).fit(x, y)
+            preds = self.detrender.predict(x)
+            err = y - preds
+            qs = np.quantile(err, self.tree_pars['alphas'], axis=0)
+            y_0 = np.squeeze(preds[:, :, None] + qs.T)
+            self.qs_0 = qs
+            self.y_0 = y_0
+        else:
+            y_0 = tree.loss.get_initial_guess(y)
+            self.y_0 = y_0
         return y_0
 
     def _validation_split(self,x,y,x_lr):
