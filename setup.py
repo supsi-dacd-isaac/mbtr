@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="mbtr",
-    version="0.1.1",
+    version="0.1.2",
     author="Lorenzo Nespoli",
     author_email="lorenzo.nespoli@supsi.ch",
     description="Multivariate Boosted Trees Regressor package",
