@@ -471,6 +471,7 @@ class QuadraticQuantileLoss(Loss):
         err = y - y_hat
         grad, hessian_diags = [[],[]]
         k = np.ones(len(self.alphas)) * 1e5
+        n = len(y)
         for i, alpha in enumerate(self.alphas):
             grad_alpha = np.zeros((len(err),1))
             hessian_alpha = np.zeros((len(err), 1))

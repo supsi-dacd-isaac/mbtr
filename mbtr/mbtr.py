@@ -489,7 +489,11 @@ class MBT:
 
         :return: target's predictions
         """
-        y_hat = self.y_0
+        if type(self.trees[0].loss) in [QuantileLoss, QuadraticQuantileLoss]:
+            preds = self.detrender.predict(x)
+            y_hat = np.squeeze(preds[:, :, None] + self.qs_0.T)
+        else:
+            y_hat = self.y_0
         if n is None:
             for tree in self.trees:
                 y_hat = y_hat + tree.predict(x, x_lr)
@@ -522,7 +526,7 @@ class MBT:
 
         return - grad, hessian_diags
 
-    def _fit_initial_guess(self, tree, y) -> np.ndarray:
+    def _fit_initial_guess(self, tree, x, y) -> np.ndarray:
         if type(tree.loss) in [QuantileLoss, QuadraticQuantileLoss]:
             _tree_pars = deepcopy(self.tree_pars)
             _tree_pars.update({"loss_type":"mse"})
