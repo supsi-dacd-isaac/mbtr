@@ -44,10 +44,11 @@ Documentation and examples on the usage can be found at [docs](https://mbtr.read
 
 If you make use of this software for your work, we would appreciate it if you would cite us:
 
-*Lorenzo Nespoli and Vasco Medici (2020).
+*Lorenzo Nespoli and Vasco Medici (2022).
 Multivariate Boosted Trees and Applications to Forecasting and Control*
 [JMLR paper](https://www.jmlr.org/papers/volume23/21-0247/21-0247.pdf)
 
+```
 @article{JMLR:v23:21-0247,
   author  = {Lorenzo Nespoli and Vasco Medici},
   title   = {Multivariate Boosted Trees and Applications to Forecasting and Control},
@@ -58,6 +59,7 @@ Multivariate Boosted Trees and Applications to Forecasting and Control*
   pages   = {1--47},
   url     = {http://jmlr.org/papers/v23/21-0247.html}
 }
+```
 
 ## Acknowledgments
 
