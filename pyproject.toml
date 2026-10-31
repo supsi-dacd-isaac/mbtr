@@ -79,7 +79,7 @@ external-boosters = [
 mocr-study = [
   "numpy==2.2.2",
   "pandas==2.2.3",
-  "torch==2.6.0",
+  "torch==2.13.0",
 ]
 dev = [
   "build>=1.2",
