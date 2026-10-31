@@ -1,638 +1,783 @@
+"""Objectives, construction surrogates, and leaf solvers for MBTR."""
+
+from __future__ import annotations
+
+from collections.abc import Mapping
+from dataclasses import dataclass
+from typing import Any
+
 import numpy as np
-import networkx as nx
-from functools import lru_cache
-from scipy.linalg import eigh
-from mbtr.utils import check_pars
-import warnings
+from numpy.typing import ArrayLike, NDArray
+from scipy.linalg import cho_solve
+from scipy.special import expit
+
+FloatArray = NDArray[np.float64]
+
+
+@dataclass(frozen=True)
+class LeafSolution:
+    """Optimal parameters for one leaf and their positive quadratic gain."""
+
+    value: FloatArray
+    gain: float
+
+
+def _as_float_matrix(value: ArrayLike, *, name: str) -> FloatArray:
+    array = np.asarray(value, dtype=np.float64)
+    if array.ndim != 2:
+        raise ValueError(f"{name} must be two-dimensional; got shape {array.shape}.")
+    if not np.all(np.isfinite(array)):
+        raise ValueError(f"{name} must contain only finite values.")
+    return array
+
+
+def _stable_solve(matrix: FloatArray, rhs: FloatArray) -> FloatArray:
+    """Solve a symmetric system, with a least-squares fallback."""
+
+    try:
+        factor = np.linalg.cholesky(matrix)
+        return np.asarray(cho_solve((factor, True), rhs, check_finite=False), dtype=np.float64)
+    except np.linalg.LinAlgError:
+        return np.asarray(np.linalg.lstsq(matrix, rhs, rcond=None)[0], dtype=np.float64)
 
 
 class Loss:
+    """Base objective for constant-response multivariate trees.
+
+    ``solve_leaf`` is the single source of truth for a construction response
+    and its split gain. Objectives may explicitly apply a different
+    post-structure refit through ``supports_leaf_refit`` and ``refit_leaf``.
     """
-    Loss function class. A loss is defined by its gradient and Hessians.
-    Note that if your specific loss funciton requires some additional argument, you can specify it in the
-    required_pars. Upon instantiation, this list will be used to check if loss_kwargs contains all the needed
-    parameters. Each class inheriting from :class:`mbtr.losses.Loss` must provide an H_inv method, computing the
-    inverse of the Hessian.
 
-    :param lambda_weights: quadratic penalization parameter for the leaves weights
-    :param lambda_leaves: quadratic penalization parameter for the number of leaves
-    :param loss_kwargs: additional parameters needed for a specific loss type
-    """
-    required_pars = []  # required pars for which no default is set, which are needed by specific losses
+    required_pars: tuple[str, ...] = ()
+    requires_response_features = False
+    linear_response_mode: str | None = None
+    linear_gram_scale = 1.0
+    requires_partitions = False
+    supports_leaf_refit = False
+    is_quantile = False
+    constant_hessian = False
 
-    def __init__(self, lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
-        self.lambda_weights = lambda_weights
-        self.lambda_leaves = lambda_leaves
-        self.kwargs = loss_kwargs
-        self.n_dims = None          # this is inferred by Tree or MBT
+    def __init__(
+        self,
+        lambda_weights: float = 0.1,
+        lambda_leaves: float = 0.0,
+        **kwargs: Any,
+    ) -> None:
+        if lambda_weights < 0 or lambda_leaves < 0:
+            raise ValueError("Regularization parameters must be non-negative.")
+        self.lambda_weights = float(lambda_weights)
+        self.lambda_leaves = float(lambda_leaves)
+        self.kwargs = dict(kwargs)
+        self.n_outputs: int | None = None
+        self.n_internal_outputs: int | None = None
 
-    def set_dimension(self, n_dims):
-        """
-        Initialize all the properties which depends on the dimension of the target
+    def configure(self, n_outputs: int) -> Loss:
+        if int(n_outputs) < 1:
+            raise ValueError("n_outputs must be at least one.")
+        self.n_outputs = int(n_outputs)
+        self.n_internal_outputs = int(n_outputs)
+        return self
 
-        :param n_dims: dimension of the target
-        :return: None
-        """
-        self.n_dims = n_dims
+    def set_dimension(self, n_dims: int) -> None:  # historical API
+        self.configure(n_dims)
 
-    def get_initial_guess(self, y):
-        """
-        Return an initial guess for the prediciton. This can be loss-specific.
+    def prepare_target(self, y: ArrayLike) -> FloatArray:
+        return _as_float_matrix(y, name="y")
 
-        :param y: target matrix of the training set
+    def restore_prediction(self, prediction: FloatArray) -> FloatArray:
+        return prediction
 
-        :return: np.ndarray with initial guess
-        """
+    def initial_prediction(self, y: FloatArray) -> FloatArray:
         return np.mean(y, axis=0)
 
-    def get_grad_and_hessian_diags(self, y, y_hat, iteration, leaves_idx):
-        """
-        Return the loss gradient and loss Hessian's diagonals based on the current model estimation y_hat and target y
-        matrices. Instead of returning the full Hessian (a 3rd order tensor), the method returns only the Hessian
-        diagonals for each observation, stored in a (n_obs, n_t) matrix. These diagonals are then used by the loss to
-        reconstruct the full Hessian with appropriate dimensions and structure. Currently, full Hessians inferred by
-        data are not supported.
+    def get_initial_guess(self, y: ArrayLike) -> FloatArray:  # historical API
+        target = self.prepare_target(y)
+        if self.n_outputs is None:
+            self.configure(target.shape[1])
+        return self.initial_prediction(target)
 
-        :param y: target matrix (n_obs, n_t)
-        :param y_hat: current target estimation matrix (n_obs, n_t)
-        :param iteration: current number of iteration, generally not needed
-        :param leaves_idx: leaves' indexes for each observation in y, (n_obs, 1). This is needed for example by :class:`mbtr.losses.QuadraticQuantileLoss`.
+    def gradient_hessian(self, y: FloatArray, prediction: FloatArray) -> tuple[FloatArray, FloatArray]:
+        negative_gradient = y - prediction
+        unit_hessian = np.broadcast_to(np.float64(1.0), negative_gradient.shape)
+        return negative_gradient, unit_hessian
 
-        :return: grad, hessian_diags tuple, each of which is a (n_obs, n_t) matrix
-        """
-        grad = - (y - y_hat)
-        hessian_diags = np.ones_like(grad)
-        return grad, hessian_diags
+    def partitioned_gradient_hessian(
+        self,
+        y: FloatArray,
+        prediction: FloatArray,
+        partitions: NDArray[np.int64],
+    ) -> tuple[FloatArray, FloatArray]:
+        """Evaluate derivatives, optionally conditioned on previous tree regions."""
 
-    def eval_optimal_response(self, G, H):
-        """
-        Evaluate optimal response, given G and H.
+        del partitions
+        return self.gradient_hessian(y, prediction)
 
-        :param G: mean gradient for the current leaf.
-        :param H: mean Hessian for the current leaf.
+    def get_grad_and_hessian_diags(
+        self,
+        y: ArrayLike,
+        y_hat: ArrayLike,
+        iteration: int = 0,
+        leaves_idx: Any = None,
+    ) -> tuple[FloatArray, FloatArray]:  # historical API
+        del iteration, leaves_idx
+        negative_gradient, hessian = self.gradient_hessian(
+            _as_float_matrix(y, name="y"), _as_float_matrix(y_hat, name="y_hat")
+        )
+        return -negative_gradient, hessian
 
-        :return: optimal response under second order loss approximation.
-        """
-        H_inv = self.H_inv(H)
-        optimal_response = H_inv @ G
-        return optimal_response
+    def solve_leaf(
+        self,
+        gradient_sum: FloatArray,
+        hessian_sum: FloatArray,
+        count: int,
+        *,
+        linear_gram: FloatArray | None = None,
+        linear_gradient: FloatArray | None = None,
+    ) -> LeafSolution:
+        del count, linear_gram, linear_gradient
+        denominator = np.maximum(
+            np.asarray(hessian_sum, dtype=np.float64) + self.lambda_weights,
+            np.finfo(np.float64).eps,
+        )
+        response = np.asarray(gradient_sum, dtype=np.float64) / denominator
+        gain = 0.5 * float(np.dot(np.asarray(gradient_sum), response))
+        return LeafSolution(response, gain)
 
-    def eval_optimal_loss(self, G2, H):
-        """
-        Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).
+    def eval_optimal_response(self, gradient_sum: ArrayLike, hessian_sum: ArrayLike) -> FloatArray:
+        return self.solve_leaf(
+            np.asarray(gradient_sum, dtype=np.float64),
+            np.asarray(hessian_sum, dtype=np.float64),
+            1,
+        ).value
 
-        :param G2: squared sum of gradients in the current leaf
-        :param H: sum of Hessians diags in the current leaf
+    def eval_optimal_loss(self, gradient_squared: ArrayLike, hessian_sum: ArrayLike) -> float:
+        """Legacy diagonal-objective helper; the new engine never squares G."""
 
-        :return: optimal loss, scalar
-        """
-        H_inv = self.H_inv(H)
-        optimal_loss = - np.sum(H_inv @ G2)
-        return optimal_loss
+        denominator = np.maximum(
+            np.asarray(hessian_sum, dtype=np.float64) + self.lambda_weights,
+            np.finfo(float).eps,
+        )
+        return -0.5 * float(np.sum(np.asarray(gradient_squared) / denominator))
 
-    def eval(self,  y, y_hat, trees):
-        """
-        Evaluates the overall loss, which is composed by the tree's loss plus weights and total leaves penalizations
+    def refit_leaf(self, residual: FloatArray) -> FloatArray:
+        return np.mean(residual, axis=0)
 
-        :param y: observations
-        :param y_hat: current :class: `mbtr.MBT` estimations
-        :param trees: array of fitted trees up to the current iteartion
+    def loss(self, y: FloatArray, prediction: FloatArray) -> float:
+        return 0.5 * float(np.mean(np.square(y - prediction)))
 
-        :return: tree loss and regularizations loss tuple, scalars
-        """
-        w_reg, t_reg, w_smooth = [0, 0, 0]
-        for tree in trees:
-            # parameter regularization
-            w_reg += self.lambda_weights * \
-                     np.sum([r ** 2 for r in nx.get_node_attributes(tree.g, 'response').values()])
-            # leaves regularization
-            t_reg += self.lambda_leaves * len(nx.get_node_attributes(tree.g, 'response').values())
+    def tree_loss(self, y: ArrayLike, prediction: ArrayLike) -> float:
+        target = _as_float_matrix(y, name="y")
+        estimate = _as_float_matrix(prediction, name="prediction")
+        return 0.5 * float(np.sum(np.square(target - estimate)))
 
-        # squared error
-        se = self.tree_loss(y, y_hat)
-        regularization = t_reg + w_reg
-
-        return se, regularization
-
-    @lru_cache(maxsize=1024)
-    def H_inv(self, H):
-        """
-        Computes the inverse of the Hessian, given the Hessian's diagonal of the current leave. The default implements
-        MSE inverse.
-
-        :param H: current leaf Hessian's diagonal (n_t)
-
-        :return: inv(H), (n_t, n_t)
-        """
-        return np.eye(self.n_dims) / (np.mean(H) + self.lambda_weights)
-
-    def tree_loss(self, y, y_hat):
-        """
-        Compute the tree loss (without penalizations)
-
-        :param y: observations of the target on the traning set
-        :param y_hat: current estimation of the MBT
-
-        :return: tree loss
-        """
-        return np.sum((y - y_hat) ** 2)
+    def eval(self, y: ArrayLike, prediction: ArrayLike, trees: Any = None) -> tuple[float, float]:
+        del trees
+        return self.tree_loss(y, prediction), 0.0
 
 
 class MSE(Loss):
-    """
-    Mean Squared Error loss, a.k.a. L2, Ordinary Least Squares.
+    """Squared-error objective with independent constant responses."""
 
-    .. math::
-
-            \\mathcal{L} = \\Vert y - w\\Vert_2^2 + \\frac{1}{2} w^T \\Lambda w
-
-    where :math:`\\Lambda` is the quadratic punishment matrix.
-
-    :param lambda_weights:  quadratic penalization parameter for the leaves weights
-    :param lambda_leaves: quadratic penalization parameter for the number of leaves
-    :param loss_kwargs: additional parameters needed for a specific loss type
-    """
-    def __init__(self, lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
-        super().__init__(lambda_weights, lambda_leaves, **loss_kwargs)
-
-    def set_dimension(self, n_dim):
-        """
-        Initialize all the properties which depends on the dimension of the target
-
-        :param n_dims: dimension of the target
-        :return: None
-        """
-        super().set_dimension(n_dim)
-
-    def eval_optimal_loss(self, G2, H):
-        """
-        Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).
-
-        :param G2: squared sum of gradients in the current leaf
-        :param H: sum of Hessians diags in the current leaf
-
-        :return: optimal loss, scalar
-        """
-
-        H_inv = self.H_inv(np.mean(H))
-        optimal_loss = - np.sum(H_inv @ G2)
-        return optimal_loss
-
-    def eval_optimal_response(self, G, H):
-        """
-        Evaluate optimal response, given G and H.
-
-        :param G: mean gradient for the current leaf.
-        :param H: mean Hessian for the current leaf.
-
-        :return: optimal response under second order loss approximation.
-        """
-        H_inv = self.H_inv(np.mean(H))
-        optimal_response = H_inv @ G
-        return optimal_response
+    constant_hessian = True
 
 
-class TimeSmoother(Loss):
-    """
-    Time-smoothing loss function. Penalizes the time-derivative of the predicted signal.
+class BinaryLogLoss(Loss):
+    """Independent Bernoulli log loss evaluated on raw logits.
 
-    .. math::
-
-            \\mathcal{L} = \\frac{1}{2}\\Vert y-w\\Vert_2^{2} + \\frac{1}{2} w^T \\left(\\lambda_s D^T D
-            + \\lambda I \\right) w
-
-    where :math:`D` is the second order difference matrix
-
-    .. math::
-
-            D=\\left[\\begin{array}{rrrrrr}
-            1 & -2 & 1 & & &
-
-            & 1 & -2 & 1 & &
-
-            & & \\ddots & \\ddots & \\ddots &
-
-            & & & 1 & -2 & 1
-
-            & & & & 1 & -2 & 1
-            \\end{array}\\right]
-
-    and :math:`\\lambda_s` is the coefficient for the quadratic penalization of time-derivatives.
-    Required parameters: lambda_smooth: coefficient for the quadratic penalization of time-derivatives
-    """
-    required_pars = ['lambda_smooth']
-
-    def __init__(self, lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
-        super().__init__(lambda_weights, lambda_leaves, **loss_kwargs)
-        check_pars(self.required_pars, **loss_kwargs)
-        self.lambda_smooth = self.kwargs['lambda_smooth']
-        self.lambdas = None
-        self.Q_inv = None
-        self.D = None
-
-    def set_dimension(self, n_dim):
-        """
-        Initialize all the properties which depends on the dimension of the target
-
-        :param n_dims: dimension of the target
-
-        :return: None
-        """
-        super().set_dimension(n_dim)
-        self.D = self.build_filter_mat(self.n_dims)
-        self.lambdas, self.Q = eigh(np.eye(self.n_dims) * self.lambda_weights + self.lambda_smooth * self.D.T @ self.D)
-        self.Q_inv = np.linalg.inv(self.Q)
-        self.H_inv = lambda H: self.compute_fast_H_inv(np.mean(H))
-
-    @staticmethod
-    def build_filter_mat(n):
-        """
-        Build the second order difference matrix
-
-        :param n: target dimension
-
-        :return: D, second order difference matrix
-        """
-        D = (np.diag(np.ones(n)) + np.diag(-np.ones(n - 1) * 2, 1) + np.diag(np.ones(n - 2), 2))[:n - 2, :]
-        return D
-
-    def update_smoothing_mat(self, smoothing_weights):
-        self.D = self.build_filter_mat(self.n_dims)
-        self.D = self.D * np.reshape(smoothing_weights, (-1, 1))
-        self.H_inv = lambda n: np.linalg.inv(np.eye(self.n_dims) * (n + self.lambda_weights)
-                                             + self.lambda_smooth * self.D.T @ self.D)
-
-    @lru_cache(maxsize=1024)
-    def compute_fast_H_inv(self,n):
-        return self.Q @ np.diag(1/(self.lambdas + n)) @ self.Q_inv
-
-
-class LatentVariable(Loss):
-    """
-    Loss for the hierarchical reconciliation problem, in the form:
-
-    .. math::
-
-        \\mathcal{L} = \\Vert y - S x\\Vert_2^2
-
-    where :math:`S` is the hierarchy matrix. The initial guess is the mean of the last columns of y.
+    The derivative formulas deliberately avoid subtracting a probability that
+    has rounded to one.  This preserves the small, correctly signed training
+    signal for confidently classified examples and is the binary analogue of
+    cancellation-safe hard-target cross-entropy.
     """
 
-    required_pars = ['S', 'precision']
+    def prepare_target(self, y: ArrayLike) -> FloatArray:
+        target = _as_float_matrix(y, name="y")
+        if np.any((target != 0.0) & (target != 1.0)):
+            raise ValueError("BinaryLogLoss targets must contain only 0 and 1.")
+        return target
 
-    def __init__(self, lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
-        super().__init__(lambda_weights, lambda_leaves, **loss_kwargs)
-        check_pars(self.required_pars, **loss_kwargs)
-        self.S = self.kwargs['S']
-        self.precision = self.kwargs['precision']
-        self.S_inv = np.linalg.inv(self.S.T@self.S)
-        self.lambdas, self.Q = eigh(self.S.T @ self.kwargs['precision'] @ self.S)
-        self.Q_inv = np.linalg.inv(self.Q)
-        self.H_inv = lambda H: self.compute_H_inv(np.mean(H))
-        self.n_dims = self.S.shape[1]
+    def restore_prediction(self, prediction: FloatArray) -> FloatArray:
+        return expit(prediction)
 
-    def set_dimension(self, n_dims):
-        """
-        For the latent loss the number of dimensions is equal to the second dimension of the S matrix, and must not
-        be inferred from the target
-        """
-        pass
+    def initial_prediction(self, y: FloatArray) -> FloatArray:
+        probability = np.mean(y, axis=0)
+        epsilon = np.finfo(np.float64).eps
+        probability = np.clip(probability, epsilon, 1.0 - epsilon)
+        return np.log(probability) - np.log1p(-probability)
 
-    def get_initial_guess(self, y):
-        """
-        The initial guess is generated from the last columns of the target matrix, as:
+    def gradient_hessian(self, y: FloatArray, prediction: FloatArray) -> tuple[FloatArray, FloatArray]:
+        # ``y - expit(prediction)`` loses the positive-class tail once expit
+        # rounds to one.  These label-conditioned expressions are equivalent
+        # in exact arithmetic and remain informative at large margins.
+        negative_gradient = np.where(
+            y == 1.0,
+            expit(-prediction),
+            -expit(prediction),
+        )
+        tail_probability = expit(-np.abs(prediction))
+        hessian = tail_probability * (1.0 - tail_probability)
+        return negative_gradient, hessian
 
-        .. math::
+    def loss(self, y: FloatArray, prediction: FloatArray) -> float:
+        signed_target = 2.0 * y - 1.0
+        return float(np.mean(np.logaddexp(0.0, -signed_target * prediction)))
 
-                y_0 = \\left( \\mathbb{E} y_b \\right) S^T
+    def tree_loss(self, y: ArrayLike, prediction: ArrayLike) -> float:
+        target = self.prepare_target(y)
+        estimate = _as_float_matrix(prediction, name="prediction")
+        if estimate.shape != target.shape:
+            raise ValueError("prediction must have the same shape as y.")
+        signed_target = 2.0 * target - 1.0
+        return float(np.sum(np.logaddexp(0.0, -signed_target * estimate)))
 
-        where :math:`\\mathbb{E}` is the expectation (row-mean), :math:`S` is the hierarchy matrix, and :math:`y_b`
-        stands for the last columns of y, with dimension (n_obs, n_b), where n_b is the number of bottom series.
 
-        :param y: target matrix of the training set
+class TimeSmoother(MSE):
+    """Squared error with a second-difference penalty per leaf response."""
 
-        :return: np.ndarray with initial guess
-        """
-        start = y.shape[1] - self.n_dims
-        stop = start + self.n_dims
-        assert start > 0, 'dimension of target ({}) must be higher than the searched latent ' \
-                          'variables ({})'.format(y.shape[1], self.n_dims)
-        y_0 = np.mean(y[:, start:stop] @ self.S.T, axis=0)
-        return y_0
+    required_pars = ("lambda_smooth",)
 
-    def get_grad_and_hessian_diags(self,y, y_hat, iteration, leaves_idx):
-        grad = - (y - y_hat) @ self.precision
-        hessian_diags = np.ones_like(grad)
-        return grad, hessian_diags
+    def __init__(self, lambda_smooth: float | None = None, **kwargs: Any) -> None:
+        if lambda_smooth is None:
+            lambda_smooth = kwargs.pop("smoothness", None)
+        if lambda_smooth is None:
+            raise TypeError("TimeSmoother requires lambda_smooth.")
+        if lambda_smooth < 0:
+            raise ValueError("lambda_smooth must be non-negative.")
+        super().__init__(**kwargs)
+        self.lambda_smooth = float(lambda_smooth)
+        self.difference_matrix_: FloatArray | None = None
+        self.penalty_matrix_: FloatArray | None = None
 
-    @lru_cache(maxsize=1024)
-    def compute_fast_H_hat(self, n):
-        return self.Q @ np.diag(1/(self.lambdas + self.lambda_weights/(n+1e-12))) @ self.Q_inv / (n+1e-12)
+    def configure(self, n_outputs: int) -> TimeSmoother:
+        super().configure(n_outputs)
+        difference = (
+            np.zeros((0, n_outputs), dtype=np.float64)
+            if n_outputs < 3
+            else np.diff(np.eye(n_outputs, dtype=np.float64), n=2, axis=0)
+        )
+        self.difference_matrix_ = difference
+        self.penalty_matrix_ = self.lambda_smooth * (difference.T @ difference)
+        return self
 
-    @lru_cache(maxsize=1024)
-    def compute_H_inv(self,n):
-        return np.eye(self.S.shape[0]) / (n + self.lambda_weights)
+    def solve_leaf(
+        self,
+        gradient_sum: FloatArray,
+        hessian_sum: FloatArray,
+        count: int,
+        **kwargs: Any,
+    ) -> LeafSolution:
+        del count, kwargs
+        if self.penalty_matrix_ is None:
+            raise RuntimeError("The objective has not been configured.")
+        system = np.diag(np.asarray(hessian_sum) + self.lambda_weights)
+        system += self.penalty_matrix_
+        response = _stable_solve(system, np.asarray(gradient_sum, dtype=np.float64))
+        return LeafSolution(response, 0.5 * float(np.dot(gradient_sum, response)))
 
-    def eval_optimal_response(self, G, H):
-        """
-        Evaluate optimal response, given G and H.
 
-        :param G: mean gradient for the current leaf.
-        :param H: mean Hessian for the current leaf.
+class FourierLoss(MSE):
+    """Squared error constrained to a non-redundant Fourier subspace."""
 
-        :return: optimal response under second order loss approximation.
-        """
-        optimal_response = (self.compute_fast_H_hat(np.mean(H))@ (G @ self.S)) @ self.S.T
-        return optimal_response
+    required_pars = ("n_harmonics",)
 
-    def eval_optimal_loss(self, yy, H):
-        """
-        Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).
+    def __init__(self, n_harmonics: int | None = None, **kwargs: Any) -> None:
+        if n_harmonics is None:
+            raise TypeError("FourierLoss requires n_harmonics.")
+        if int(n_harmonics) < 0:
+            raise ValueError("n_harmonics must be non-negative.")
+        super().__init__(**kwargs)
+        self.n_harmonics = int(n_harmonics)
+        self.basis_: FloatArray | None = None
 
-        :param G2: squared sum of gradients in the current leaf
-        :param H: sum of Hessians diags in the current leaf
+    def configure(self, n_outputs: int) -> FourierLoss:
+        super().configure(n_outputs)
+        time = np.arange(n_outputs, dtype=np.float64)
+        columns: list[FloatArray] = [np.ones(n_outputs, dtype=np.float64)]
+        for harmonic in range(1, self.n_harmonics + 1):
+            phase = 2.0 * np.pi * harmonic * time / n_outputs
+            columns.extend((np.cos(phase), np.sin(phase)))
+        candidate = np.column_stack(columns)
+        left_vectors, singular_values, _ = np.linalg.svd(candidate, full_matrices=False)
+        tolerance = np.finfo(float).eps * max(candidate.shape) * singular_values[0]
+        self.basis_ = left_vectors[:, : int(np.sum(singular_values > tolerance))]
+        return self
 
-        :return: optimal loss, scalar
-        """
+    def solve_leaf(
+        self,
+        gradient_sum: FloatArray,
+        hessian_sum: FloatArray,
+        count: int,
+        **kwargs: Any,
+    ) -> LeafSolution:
+        del count, kwargs
+        if self.basis_ is None:
+            raise RuntimeError("The objective has not been configured.")
+        system = self.basis_.T @ (np.asarray(hessian_sum)[:, None] * self.basis_)
+        system += self.lambda_weights * np.eye(system.shape[0])
+        projected_gradient = self.basis_.T @ np.asarray(gradient_sum)
+        weights = _stable_solve(system, projected_gradient)
+        response = self.basis_ @ weights
+        return LeafSolution(response, 0.5 * float(np.dot(projected_gradient, weights)))
 
-        H_inv = self.H_inv(H)
-        optimal_loss = -np.sum((H_inv @ yy @ self.precision))
-        return optimal_loss
+
+class LatentVariable(MSE):
+    """Generalized least squares response constrained to the span of ``S``."""
+
+    required_pars = ("S", "precision")
+
+    def __init__(
+        self,
+        S: ArrayLike | None = None,
+        precision: ArrayLike | None = None,
+        **kwargs: Any,
+    ) -> None:
+        if S is None or precision is None:
+            raise TypeError("LatentVariable requires S and precision.")
+        super().__init__(**kwargs)
+        self.S = _as_float_matrix(S, name="S")
+        self.precision = _as_float_matrix(precision, name="precision")
+        if self.precision.shape[0] != self.precision.shape[1]:
+            raise ValueError("precision must be square.")
+        if not np.allclose(self.precision, self.precision.T, rtol=1e-10, atol=1e-12):
+            raise ValueError("precision must be symmetric.")
+        if self.S.shape[0] != self.precision.shape[0]:
+            raise ValueError("S rows must match precision dimensions.")
+        if np.min(np.linalg.eigvalsh(self.precision)) < -1e-10:
+            raise ValueError("precision must be positive semidefinite.")
+        self.parameter_hessian_: FloatArray | None = None
+
+    def configure(self, n_outputs: int) -> LatentVariable:
+        if n_outputs != self.S.shape[0]:
+            raise ValueError(f"y has {n_outputs} outputs but S has {self.S.shape[0]} rows.")
+        super().configure(n_outputs)
+        self.parameter_hessian_ = self.S.T @ self.precision @ self.S
+        return self
+
+    def initial_prediction(self, y: FloatArray) -> FloatArray:
+        if self.parameter_hessian_ is None:
+            raise RuntimeError("The objective has not been configured.")
+        rhs = self.S.T @ self.precision @ np.mean(y, axis=0)
+        weights = np.linalg.lstsq(self.parameter_hessian_, rhs, rcond=None)[0]
+        return self.S @ weights
+
+    def gradient_hessian(self, y: FloatArray, prediction: FloatArray) -> tuple[FloatArray, FloatArray]:
+        return (y - prediction) @ self.precision.T, np.ones_like(y)
+
+    def solve_leaf(
+        self,
+        gradient_sum: FloatArray,
+        hessian_sum: FloatArray,
+        count: int,
+        **kwargs: Any,
+    ) -> LeafSolution:
+        del hessian_sum, kwargs
+        if self.parameter_hessian_ is None:
+            raise RuntimeError("The objective has not been configured.")
+        system = count * self.parameter_hessian_
+        system += self.lambda_weights * np.eye(system.shape[0])
+        parameter_gradient = self.S.T @ np.asarray(gradient_sum)
+        weights = _stable_solve(system, parameter_gradient)
+        response = self.S @ weights
+        return LeafSolution(response, 0.5 * float(np.dot(parameter_gradient, weights)))
+
+    def loss(self, y: FloatArray, prediction: FloatArray) -> float:
+        residual = y - prediction
+        return 0.5 * float(np.mean(np.einsum("ni,ij,nj->n", residual, self.precision, residual)))
 
 
 class QuantileLoss(Loss):
+    """Published logistic split surrogate with exact pinball leaf refits."""
 
-    required_pars = ['alphas']
+    required_pars = ("alphas",)
+    supports_leaf_refit = True
+    is_quantile = True
 
-    def __init__(self, lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
-        super().__init__(lambda_weights, lambda_leaves, **loss_kwargs)
-        check_pars(self.required_pars, **loss_kwargs)
-        self.alphas = self.kwargs['alphas']
-        self.tree_loss = self.quantile_loss
+    def __init__(
+        self,
+        alphas: ArrayLike | None = None,
+        smoothing: float = 1.0,
+        min_hessian: float = 1e-6,
+        **kwargs: Any,
+    ) -> None:
+        if alphas is None:
+            raise TypeError("QuantileLoss requires alphas.")
+        super().__init__(**kwargs)
+        alpha_array = np.asarray(alphas, dtype=np.float64)
+        if alpha_array.ndim != 1 or alpha_array.size == 0:
+            raise ValueError("alphas must be a non-empty one-dimensional sequence.")
+        if np.any((alpha_array <= 0.0) | (alpha_array >= 1.0)):
+            raise ValueError("Every quantile level must be strictly between zero and one.")
+        if np.any(np.diff(alpha_array) <= 0.0):
+            raise ValueError("alphas must be strictly increasing.")
+        if smoothing <= 0 or min_hessian <= 0:
+            raise ValueError("smoothing and min_hessian must be positive.")
+        self.alphas = alpha_array
+        self.smoothing = float(smoothing)
+        self.min_hessian = float(min_hessian)
+        self._alpha_internal: FloatArray | None = None
 
-    def get_initial_guess(self, y):
-        """
-        The initial guess are the alpha quantiles of the target matrix y.
+    def configure(self, n_outputs: int) -> QuantileLoss:
+        super().configure(n_outputs)
+        self.n_internal_outputs = n_outputs * len(self.alphas)
+        self._alpha_internal = np.tile(self.alphas, n_outputs)
+        return self
 
-        :param y: target matrix of the training set
+    def prepare_target(self, y: ArrayLike) -> FloatArray:
+        target = _as_float_matrix(y, name="y")
+        if self.n_outputs is None:
+            self.configure(target.shape[1])
+        if target.shape[1] != self.n_outputs:
+            raise ValueError("Target output dimension changed after objective configuration.")
+        return np.repeat(target[:, :, None], len(self.alphas), axis=2).reshape(target.shape[0], -1)
 
-        :return: np.ndarray with initial guess
-        """
-        alphas = self.alphas
-        return np.quantile(y, alphas).reshape(1, -1)
+    def restore_prediction(self, prediction: FloatArray) -> FloatArray:
+        if self.n_outputs is None:
+            raise RuntimeError("The objective has not been configured.")
+        return prediction.reshape(prediction.shape[0], self.n_outputs, len(self.alphas))
 
-    def H_inv(self, H):
-        return np.diag(1 / (H + self.lambda_weights))
+    def initial_prediction(self, y: FloatArray) -> FloatArray:
+        if self.n_outputs is None:
+            raise RuntimeError("The objective has not been configured.")
+        original = y[:, :: len(self.alphas)]
+        return np.quantile(original, self.alphas, axis=0).T.reshape(-1)
 
-    def quantile_loss(self, y, q_hat):
-        """
-        Quantile loss function, a.k.a. pinball loss.
+    def gradient_hessian(self, y: FloatArray, prediction: FloatArray) -> tuple[FloatArray, FloatArray]:
+        if self._alpha_internal is None:
+            raise RuntimeError("The objective has not been configured.")
+        residual = y - prediction
+        shift = np.log((1.0 - self._alpha_internal) / self._alpha_internal)
+        probability = expit(residual / self.smoothing + shift)
+        negative_gradient = probability + self._alpha_internal - 1.0
+        hessian = probability * (1.0 - probability) / self.smoothing
+        return negative_gradient, np.maximum(hessian, self.min_hessian)
 
-        .. math::
+    def refit_leaf(self, residual: FloatArray) -> FloatArray:
+        if self._alpha_internal is None or residual.shape[0] == 0:
+            raise ValueError("Cannot refit an unconfigured or empty quantile leaf.")
+        return np.asarray(
+            [np.quantile(residual[:, output], alpha) for output, alpha in enumerate(self._alpha_internal)],
+            dtype=np.float64,
+        )
 
-            \\epsilon (y,\\hat{q})_{\\alpha} &= \\hat{q}_{\\alpha} - y
+    def loss(self, y: FloatArray, prediction: FloatArray) -> float:
+        if self._alpha_internal is None:
+            raise RuntimeError("The objective has not been configured.")
+        residual = y - prediction
+        return float(
+            np.mean(
+                np.maximum(
+                    self._alpha_internal * residual,
+                    (self._alpha_internal - 1.0) * residual,
+                )
+            )
+        )
 
-            \\mathcal{L} (y,\\hat{q})_{\\alpha} &= \\epsilon (y,\\hat{q})_{\\alpha} \\left( I_{\\epsilon_{\\alpha}\\geq 0} -\\alpha \\right)
 
-        :param y: observations of the target on the traning set
-        :param q_hat: current estimation matrix of the quantiles
+class QuadraticQuantileLoss(QuantileLoss):
+    """Published leaf-dependent linear-quadratic quantile surrogate.
 
-        :return: tree loss
-        """
-        loss = np.zeros(len(self.alphas))
-        for i, alpha in enumerate(self.alphas):
-            I = q_hat[:, [i]] < y
-            loss[i] = np.sum((alpha * I + (1-alpha)*(~I)) * np.abs(y-q_hat[:, [i]]))
-        return np.sum(loss)
+    The negative gradient follows equation 39 of Nespoli and Medici (2022)
+    within regions from the preceding tree. Equation 40 is indefinite as
+    printed, so split search uses its absolute curvature as a positive
+    quasi-Newton stabilization. The public metric and terminal refit remain
+    exact pinball loss. Partitions with residual ties or a missing side use
+    the pinball subgradient because the published construction assumes
+    non-zero mass on both sides of the candidate quantile.
+    """
 
-    def get_grad_and_hessian_diags(self, y, y_hat, iteration, leaves_idx):
-        loss_grad, hessian = [[],[]]
-        for i,alpha in enumerate(self.alphas):
-            err = y - y_hat[:, [i]]
-            shift = np.log((1 - alpha) / alpha)
-            loss_grad_i = -(np.exp(err+shift)/(1 + np.exp(err+shift)) + alpha-1)
-            hessian_i = err+shift
-            hessian_i[hessian_i <= 10] = np.exp(
-                hessian_i[hessian_i <= 10])/((1 + np.exp(hessian_i[hessian_i <= 10]))**2) + 1e-3
-            hessian_i[hessian_i>10] = 0
-            loss_grad.append(loss_grad_i)
-            hessian.append(hessian_i)
+    requires_partitions = True
 
-        loss_grad = np.hstack(loss_grad)
-        hessian = np.hstack(hessian)
-        return loss_grad, hessian
+    def __init__(
+        self,
+        quadratic_scale: float = 1e5,
+        denominator_floor: float = 1e-12,
+        **kwargs: Any,
+    ) -> None:
+        if quadratic_scale <= 0 or denominator_floor <= 0:
+            raise ValueError("quadratic_scale and denominator_floor must be positive.")
+        super().__init__(**kwargs)
+        self.quadratic_scale = float(quadratic_scale)
+        self.denominator_floor = float(denominator_floor)
 
-    def exact_response(self, y):
-        response = np.zeros(len(self.alphas))
-        for i in range(len(response)):
-            response[i] = np.quantile(y[:, i], self.alphas[i])
+    def gradient_hessian(self, y: FloatArray, prediction: FloatArray) -> tuple[FloatArray, FloatArray]:
+        raise ValueError("QuadraticQuantileLoss requires partition labels; use partitioned_gradient_hessian().")
+
+    def partitioned_gradient_hessian(
+        self,
+        y: FloatArray,
+        prediction: FloatArray,
+        partitions: NDArray[np.int64],
+    ) -> tuple[FloatArray, FloatArray]:
+        if self._alpha_internal is None:
+            raise RuntimeError("The objective has not been configured.")
+        partition_array = np.asarray(partitions)
+        if partition_array.ndim != 1 or partition_array.shape[0] != y.shape[0]:
+            raise ValueError("partitions must be one-dimensional with one label per sample.")
+
+        residual = y - prediction
+        negative_gradient = np.empty_like(residual)
+        hessian = np.empty_like(residual)
+        k = self.quadratic_scale
+
+        for partition in np.unique(partition_array):
+            rows = np.flatnonzero(partition_array == partition)
+            for output, alpha in enumerate(self._alpha_internal):
+                values = residual[rows, output]
+                lower = values < 0.0
+                upper = values > 0.0
+                ties = ~(lower | upper)
+                lower_mass = -float(np.sum(values[lower]))
+                upper_mass = float(np.sum(values[upper]))
+
+                if (
+                    np.any(ties)
+                    or not np.any(lower)
+                    or not np.any(upper)
+                    or lower_mass <= self.denominator_floor
+                    or upper_mass <= self.denominator_floor
+                ):
+                    local_gradient = np.where(lower, alpha - 1.0, np.where(upper, alpha, 0.0))
+                    negative_gradient[rows, output] = local_gradient
+                    hessian[rows, output] = self.min_hessian
+                    continue
+
+                offset = 2.0 * k / len(rows)
+                negative_gradient[rows[lower], output] = alpha - 1.0 + k * values[lower] / -lower_mass - offset
+                negative_gradient[rows[upper], output] = alpha + k * values[upper] / upper_mass - offset
+                hessian[rows[lower], output] = k / lower_mass
+                hessian[rows[upper], output] = k / upper_mass
+
+        return negative_gradient, np.maximum(hessian, self.min_hessian)
+
+    def get_grad_and_hessian_diags(
+        self,
+        y: ArrayLike,
+        y_hat: ArrayLike,
+        iteration: int = 0,
+        leaves_idx: Any = None,
+    ) -> tuple[FloatArray, FloatArray]:
+        """Historical API accepting either labels or boolean leaf masks."""
+
+        del iteration
+        target = _as_float_matrix(y, name="y")
+        prediction = _as_float_matrix(y_hat, name="y_hat")
+        if leaves_idx is None:
+            partitions: NDArray[np.int64] = np.zeros(len(target), dtype=np.int64)
+        else:
+            raw_partitions = np.asarray(leaves_idx)
+            if raw_partitions.ndim == 1 and raw_partitions.shape[0] == len(target):
+                partitions = np.asarray(raw_partitions, dtype=np.int64)
+            elif raw_partitions.ndim == 2 and raw_partitions.shape[1] == len(target):
+                partitions = np.full(len(target), -1, dtype=np.int64)
+                for label, mask in enumerate(raw_partitions.astype(bool)):
+                    partitions[mask] = label
+                if np.any(partitions < 0):
+                    raise ValueError("Boolean leaves_idx masks must cover every sample.")
+            else:
+                raise ValueError("leaves_idx must contain labels or boolean leaf masks.")
+        negative_gradient, hessian = self.partitioned_gradient_hessian(target, prediction, partitions)
+        return -negative_gradient, hessian
+
+
+class PseudoHuberQuantileLoss(QuantileLoss):
+    """Convex asymmetric pseudo-Huber quantile objective."""
+
+    def __init__(self, delta: float = 1.0, **kwargs: Any) -> None:
+        if delta <= 0:
+            raise ValueError("delta must be positive.")
+        super().__init__(**kwargs)
+        self.delta = float(delta)
+
+    def initial_prediction(self, y: FloatArray) -> FloatArray:
+        if self.n_outputs is None:
+            raise RuntimeError("The objective has not been configured.")
+        return self.refit_leaf(y)
+
+    def gradient_hessian(self, y: FloatArray, prediction: FloatArray) -> tuple[FloatArray, FloatArray]:
+        if self._alpha_internal is None:
+            raise RuntimeError("The objective has not been configured.")
+        residual = y - prediction
+        weights = np.where(residual >= 0.0, self._alpha_internal, 1.0 - self._alpha_internal)
+        scale = np.hypot(residual, self.delta)
+        negative_gradient = weights * residual / scale
+        hessian = weights * np.square(self.delta / scale) / scale
+        return negative_gradient, np.maximum(hessian, self.min_hessian)
+
+    def refit_leaf(self, residual: FloatArray) -> FloatArray:
+        if self._alpha_internal is None or residual.shape[0] == 0:
+            raise ValueError("Cannot refit an unconfigured or empty quantile leaf.")
+        response = np.empty(residual.shape[1], dtype=np.float64)
+        for output, alpha in enumerate(self._alpha_internal):
+            values = residual[:, output]
+            margin = max(1.0, 40.0 * self.delta)
+            lower = float(np.min(values) - margin)
+            upper = float(np.max(values) + margin)
+            for _ in range(80):
+                midpoint = 0.5 * (lower + upper)
+                centred = values - midpoint
+                weights = np.where(centred >= 0.0, alpha, 1.0 - alpha)
+                score = float(np.mean(weights * centred / np.hypot(centred, self.delta)))
+                if score > 0.0:
+                    lower = midpoint
+                else:
+                    upper = midpoint
+            response[output] = 0.5 * (lower + upper)
         return response
 
-
-class QuadraticQuantileLoss(Loss):
-
-    required_pars = ['alphas']
-
-    def __init__(self, lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
-        super().__init__(lambda_weights, lambda_leaves, **loss_kwargs)
-        check_pars(self.required_pars, **loss_kwargs)
-        self.alphas = self.kwargs['alphas']
-
-    def get_initial_guess(self, y):
-        """
-        The initial guess are the alpha quantiles of the target matrix y.
-
-        :param y: target matrix of the training set
-
-        :return: np.ndarray with initial guess
-        """
-        alphas = self.alphas
-        return np.quantile(y, alphas).reshape(1, -1)
-
-    def H_inv(self, H):
-        return np.diag(1 / (H + self.lambda_weights))
-
-    def tree_loss(self, y, y_hat):
-        """
-        Compute the tree loss (without penalizations)
-
-        :param y: observations of the target on the traning set
-        :param y_hat: current estimation of the MBT
-
-        :return: tree loss
-        """
-        loss = np.zeros(len(self.alphas))
-        for i, alpha in enumerate(self.alphas):
-            I = y_hat[:, [i]] < y
-            loss[i] = np.sum((alpha*I + (1 - alpha) * (~I)) * np.abs(y - y_hat[:, [i]]))
-        return np.sum(loss)
-
-    def get_grad_and_hessian_diags(self,y, y_hat, iteration, leaves_idx):
-        err = y - y_hat
-        grad, hessian_diags = [[],[]]
-        k = np.ones(len(self.alphas)) * 1e5
-        n = len(y)
-        for i, alpha in enumerate(self.alphas):
-            grad_alpha = np.zeros((len(err),1))
-            hessian_alpha = np.zeros((len(err), 1))
-            for leaf_idx in leaves_idx:
-                err_leaf = err[leaf_idx,i]
-                lefts_idx, rights_idx = [err_leaf<=0, err_leaf>0]
-                norm_l = np.sum(err_leaf[lefts_idx]) if np.any(lefts_idx) else 1
-                norm_r = np.sum(err_leaf[rights_idx]) if np.any(rights_idx) else 1
-                # next two lines were due to an error in the formula
-                #grad_alpha[leaf_idx] = (err_leaf * (-2*k[i] + lefts_idx *(1-alpha-k[i]/norm_l) + rights_idx *(alpha+k[i]/norm_r))).reshape(-1,1)
-                #hessian_alpha[leaf_idx] = -(-2*k[i] + lefts_idx *(1-alpha-k[i]/norm_l) + rights_idx *(alpha+k[i]/norm_r) ).reshape(-1,1)
-                grad_alpha[leaf_idx] = -((1 - alpha + k[i] * err_leaf / norm_r) * rights_idx
-                                         + (-alpha + k[i] * err_leaf / norm_l) * lefts_idx - 2 * k[i] / n).reshape(-1,
-                                                                                                                   1)
-                hessian_alpha[leaf_idx] = -(k[i] * rights_idx / norm_r + k[i] * lefts_idx / norm_l).reshape(-1, 1)
-            grad.append(grad_alpha)
-            hessian_diags.append(hessian_alpha)
-        grad = np.hstack(grad)
-        hessian_diags = np.hstack(hessian_diags)
-        return grad, hessian_diags
-
-    def exact_response(self, y):
-        response = np.zeros(len(self.alphas))
-        for i in range(len(response)):
-            response[i] = np.quantile(y[:,i], self.alphas[i])
-        return response
+    def loss(self, y: FloatArray, prediction: FloatArray) -> float:
+        if self._alpha_internal is None:
+            raise RuntimeError("The objective has not been configured.")
+        residual = y - prediction
+        weights = np.where(residual >= 0.0, self._alpha_internal, 1.0 - self._alpha_internal)
+        return float(np.mean(weights * (np.hypot(residual, self.delta) - self.delta)))
 
 
-class FourierLoss(Loss):
+class LinRegLoss(MSE):
+    """Squared-error objective with a ridge response inside each leaf."""
+
+    requires_response_features = True
+    linear_response_mode = "shared"
+
+    def __init__(self, regularize_intercept: bool = False, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.regularize_intercept = bool(regularize_intercept)
+
+    def solve_leaf(
+        self,
+        gradient_sum: FloatArray,
+        hessian_sum: FloatArray,
+        count: int,
+        *,
+        linear_gram: FloatArray | None = None,
+        linear_gradient: FloatArray | None = None,
+    ) -> LeafSolution:
+        del gradient_sum, hessian_sum, count
+        if linear_gram is None or linear_gradient is None:
+            raise ValueError("Linear leaves require Gram and gradient statistics.")
+        penalty = np.full(linear_gram.shape[0], self.lambda_weights, dtype=np.float64)
+        if not self.regularize_intercept:
+            penalty[-1] = 0.0
+        coefficients = _stable_solve(np.asarray(linear_gram) + np.diag(penalty), np.asarray(linear_gradient))
+        gain = 0.5 * float(np.sum(np.asarray(linear_gradient) * coefficients))
+        return LeafSolution(coefficients, gain)
+
+
+class LinearBinaryLogLoss(BinaryLogLoss):
+    """Bernoulli log loss with a ridge-linear logit response in each leaf.
+
+    ``curvature="upper_bound"`` uses the global Bernoulli curvature bound
+    ``p * (1 - p) <= 1/4``. This shares one Gram matrix across all labels.
+    ``curvature="exact"`` uses one Hessian-weighted Gram matrix per label.
+    Both modes evaluate and monotonically accept steps against the exact
+    binary cross-entropy inherited from :class:`BinaryLogLoss`.
     """
-    Loss for the Fourier regression:
 
-    .. math::
+    requires_response_features = True
 
-        \\mathcal{L} = \\Vert y - P x\\Vert_2^2
+    def __init__(
+        self,
+        curvature: str = "upper_bound",
+        regularize_intercept: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        if curvature not in {"upper_bound", "exact"}:
+            raise ValueError("curvature must be 'upper_bound' or 'exact'.")
+        super().__init__(**kwargs)
+        self.curvature = curvature
+        self.regularize_intercept = bool(regularize_intercept)
+        self.linear_response_mode = "shared" if curvature == "upper_bound" else "per_output"
+        self.linear_gram_scale = 0.25 if curvature == "upper_bound" else 1.0
 
-    where :math:`P` is the projection matrix:
+    def solve_leaf(
+        self,
+        gradient_sum: FloatArray,
+        hessian_sum: FloatArray,
+        count: int,
+        *,
+        linear_gram: FloatArray | None = None,
+        linear_gradient: FloatArray | None = None,
+    ) -> LeafSolution:
+        del gradient_sum, hessian_sum, count
+        if linear_gram is None or linear_gradient is None:
+            raise ValueError("Linear-logistic leaves require Gram and gradient statistics.")
+        gram = np.asarray(linear_gram, dtype=np.float64)
+        projected_gradient = np.asarray(linear_gradient, dtype=np.float64)
+        if projected_gradient.ndim != 2:
+            raise ValueError("linear_gradient must have shape (design_width, n_outputs).")
+        design_width, n_outputs = projected_gradient.shape
+        penalty = np.full(design_width, self.lambda_weights, dtype=np.float64)
+        if not self.regularize_intercept:
+            penalty[-1] = 0.0
+        regularizer = np.diag(penalty)
 
-    .. math::
-
-        P=\\left[\\left[\\cos \\left(k \\frac{2 \\pi t}{n_{t}}\\right)^{T}, \\sin \\left(k
-        \\frac{2 \\pi t}{n_{t}}\\right)^{T}\\right]^{T}\\right]_{k \\in \\mathcal{K}}
-
-    """
-    required_pars = ['n_harmonics']
-
-    def __init__(self, lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
-        super().__init__(lambda_weights, lambda_leaves, **loss_kwargs)
-        check_pars(self.required_pars, **loss_kwargs)
-        self.n_harmonics = self.kwargs['n_harmonics']
-        self.cosines = None
-        self.sines = None
-        self.P = None
-
-    def set_dimension(self, n_dim):
-        """
-        Initialize all the properties which depends on the dimension of the target
-
-        :param n_dims: dimension of the target
-        :return: None
-        """
-        super().set_dimension(n_dim)
-        self.cosines = np.cos(np.outer(np.arange(self.n_harmonics), np.arange(self.n_dims) * 2 * np.pi / self.n_dims))
-        self.sines = np.sin(np.outer(np.arange(self.n_harmonics), np.arange(self.n_dims) * 2 * np.pi / self.n_dims))
-        self.P = np.vstack([self.sines, self.cosines])
-
-    def get_initial_guess(self, y):
-        """
-        Return an initial guess for the prediciton. This can be loss-specific.
-
-        :param y: target matrix of the training set
-
-        :return: np.ndarray with initial guess
-        """
-        return np.tile(np.mean(y), y.shape[1])
-
-    @lru_cache(maxsize=1024)
-    def projection_matrix(self, n):
-        """
-        Return projection matrix for the Fourier coefficient estimation.
-
-        :param n: number of observations
-
-        :return: projection matrix P, (2*n_harmonics, n_t) where n_harmonics is the number of harmonics to fit, n_t the
-        target dimension
-        """
-        return self.P/(self.n_dims * n / 2)
-
-    def eval_optimal_response(self, G, H):
-        """
-        Evaluate optimal response, given G and H.
-
-        :param G: mean gradient for the current leaf.
-        :param H: mean Hessian for the current leaf.
-
-        :return: optimal response under second order loss approximation.
-        """
-        P = self.projection_matrix(np.mean(H))
-        return np.sum(self.P * (P @ G).reshape(-1,1), axis=0)
-
-    def eval_optimal_loss(self, G2, H):
-        """
-        Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).
-
-        :param G2: squared sum of gradients in the current leaf
-        :param H: sum of Hessians diags in the current leaf
-
-        :return: optimal loss, scalar
-        """
-        optimal_loss = - np.sum(G2 / np.mean(H) / self.n_dims)
-
-        return optimal_loss
+        if self.curvature == "upper_bound":
+            if gram.shape != (design_width, design_width):
+                raise ValueError("Upper-bound curvature requires one shared square Gram matrix.")
+            coefficients = _stable_solve(gram + regularizer, projected_gradient)
+        else:
+            if gram.shape != (n_outputs, design_width, design_width):
+                raise ValueError("Exact curvature requires one square Gram matrix per output.")
+            coefficients = np.empty_like(projected_gradient)
+            for output in range(n_outputs):
+                coefficients[:, output] = _stable_solve(
+                    gram[output] + regularizer,
+                    projected_gradient[:, output],
+                )
+        gain = 0.5 * float(np.sum(projected_gradient * coefficients))
+        return LeafSolution(coefficients, gain)
 
 
-class LinRegLoss(Loss):
-    def __init__(self, lambda_weights: float = 0.1, lambda_leaves: float = 0.1, **loss_kwargs):
-        super().__init__(lambda_weights, lambda_leaves, **loss_kwargs)
+LOSS_MAP: Mapping[str, type[Loss]] = {
+    "mse": MSE,
+    "squared_error": MSE,
+    "time_smoother": TimeSmoother,
+    "latent_variable": LatentVariable,
+    "linear_regression": LinRegLoss,
+    "linear-regression": LinRegLoss,
+    "fourier": FourierLoss,
+    "quantile": QuantileLoss,
+    "quadratic_quantile": QuadraticQuantileLoss,
+    "pseudo_huber_quantile": PseudoHuberQuantileLoss,
+    "pseudo-huber-quantile": PseudoHuberQuantileLoss,
+}
 
-    def set_dimension(self, n_dim):
-        """
-        Initialize all the properties which depends on the dimension of the target
 
-        :param n_dims: dimension of the target
-        :return: None
-        """
-        super().set_dimension(n_dim)
+def make_loss(
+    objective: str | Loss,
+    *,
+    lambda_weights: float,
+    lambda_leaves: float,
+    objective_params: Mapping[str, Any] | None = None,
+) -> Loss:
+    if isinstance(objective, Loss):
+        return objective
+    if not isinstance(objective, str):
+        raise TypeError("objective must be a registered name or a Loss instance.")
+    try:
+        objective_type = LOSS_MAP[objective]
+    except KeyError as exc:
+        choices = ", ".join(sorted(LOSS_MAP))
+        raise ValueError(f"Unknown objective {objective!r}. Available: {choices}.") from exc
+    parameters = dict(objective_params or {})
+    parameters.setdefault("lambda_weights", lambda_weights)
+    parameters.setdefault("lambda_leaves", lambda_leaves)
+    return objective_type(**parameters)
 
-    def eval_optimal_response(self, G, x):
-        """
-        Evaluate optimal response, given G and x. This is done computing a Ridge regression with intercept
 
-        .. math::
-
-                w = \\left(\\tilde{x}^T \\tilde{x} + \\lambda I \\right)^{-1} \\left(\\tilde{x}^T G \\right)
-
-        where :math:`\\tilde{x}` is the :math:`x` matrix augmented with an unitary column and :math:`\\lambda` is the
-        Ridge coefficient.
-
-        :param G: gradient for the current leaf.
-        :param x: linear regression features for the current leaf.
-
-        :return: optimal response under second order loss approximation.
-        """
-        x = np.hstack([x,np.ones((x.shape[0],1))])
-        P = np.eye(x.shape[1]) * self.lambda_weights
-        coeffs = np.linalg.pinv(x.T@x + P) @ (x.T@G)
-        if np.any(coeffs)>1e3:
-            warnings.warn('Linear regression coeffs seem too high: max is {}!'.format(np.max(coeffs)))
-        return coeffs
-
-    def eval_optimal_loss(self, G, x):
-        """
-        Evaluate the optimal loss (using response obtained minimizing the second order loss approximation).
-
-        :param G: gradient for the current leaf.
-        :param x: linear regression features for the current leaf.
-
-        :return: optimal loss, scalar
-        """
-        coeffs = self.eval_optimal_response(G,x)
-        x = np.hstack([x, np.ones((x.shape[0], 1))])
-        y_hat = x@coeffs
-        loss = np.sum((G-y_hat)**2)
-        return loss
+__all__ = [
+    "LOSS_MAP",
+    "LeafSolution",
+    "Loss",
+    "MSE",
+    "BinaryLogLoss",
+    "LinearBinaryLogLoss",
+    "TimeSmoother",
+    "LatentVariable",
+    "QuantileLoss",
+    "QuadraticQuantileLoss",
+    "PseudoHuberQuantileLoss",
+    "FourierLoss",
+    "LinRegLoss",
+    "make_loss",
+]

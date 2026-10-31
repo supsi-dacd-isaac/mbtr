@@ -1,0 +1,40 @@
+{
+  "retrieval_policy": "Resolve and save the task list plus split indices at preparation time; record retrieval UTC timestamp and raw metadata hashes.",
+  "suites": [
+    {
+      "id": 99,
+      "alias": "OpenML-CC18",
+      "tasks": 72,
+      "binary_tasks": 35,
+      "multiclass_tasks": 37,
+      "split": "one-repeat stratified 10-fold cross-validation",
+      "supported_now": "binary tasks only",
+      "sensitivity_exclusion_task_ids": [11, 219, 3021, 3573],
+      "sensitivity_exclusion_names": ["balance-scale", "electricity", "sick", "mnist_784"]
+    },
+    {
+      "id": 353,
+      "alias": "OpenML-CTR23",
+      "tasks": 35,
+      "split": "30 one-repeat 10-fold tasks and 5 ten-repeat 10-fold tasks in the live manifest",
+      "repeated_cv_task_ids": [361617, 361618, 361619, 361621, 361622],
+      "prose_discrepancy": "The paper and suite prose describe 33% holdouts above 10000 rows; the live task definitions use cross-validation and are authoritative for reproducing published experiments."
+    },
+    {
+      "id": 271,
+      "alias": "amlb-classification-all",
+      "tasks": 71,
+      "binary_tasks": 41,
+      "multiclass_tasks": 30,
+      "split": "fixed stratified 10-fold cross-validation",
+      "supported_now": "binary tasks only"
+    },
+    {
+      "id": 269,
+      "alias": "amlb-regression",
+      "tasks": 33,
+      "split": "fixed 10-fold cross-validation",
+      "supported_now": "all tasks"
+    }
+  ]
+}

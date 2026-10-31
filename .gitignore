@@ -1,4 +1,31 @@
-docs/source/_build
-docs/source/_templates
-venv
-.pytest_cache
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.coverage
+.hypothesis/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Distribution artifacts
+build/
+dist/
+
+# Documentation and benchmarks
+docs/_build/
+docs/build/
+docs/source/_build/
+docs/source/_templates/
+.asv/
+studies/results/
+studies/data/
+
+# Editors and operating systems
+.DS_Store
+.idea/
+.vscode/

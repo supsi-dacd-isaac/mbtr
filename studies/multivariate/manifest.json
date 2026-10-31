@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "prepared_path_template": "{protocol_id}/{dataset_id}/{run_id}.npz",
+  "datasets": [
+    {
+      "dataset_id": "rf1",
+      "protocol_id": "sketchboost_random_holdout_cv5_2022",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "scm20d",
+      "protocol_id": "sketchboost_random_holdout_cv5_2022",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mocr_households",
+      "protocol_id": "mocr_point_prediction_2025",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mocr_house",
+      "protocol_id": "mocr_point_prediction_2025",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mocr_bio",
+      "protocol_id": "mocr_point_prediction_2025",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mocr_blog_data",
+      "protocol_id": "mocr_point_prediction_2025",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mocr_taxi",
+      "protocol_id": "mocr_point_prediction_2025",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mocr_meps19",
+      "protocol_id": "mocr_point_prediction_2025",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mocr_meps20",
+      "protocol_id": "mocr_point_prediction_2025",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mocr_meps21",
+      "protocol_id": "mocr_point_prediction_2025",
+      "task": "regression",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "mediamill",
+      "protocol_id": "sketchboost_official_holdout_cv5_2022",
+      "task": "multilabel",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "delicious",
+      "protocol_id": "sketchboost_official_holdout_cv5_2022",
+      "task": "multilabel",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "moa",
+      "protocol_id": "sketchboost_random_holdout_cv5_2022",
+      "task": "multilabel",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "emotions",
+      "protocol_id": "kdis_iterative_5fold_2017",
+      "task": "multilabel",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "scene",
+      "protocol_id": "kdis_iterative_5fold_2017",
+      "task": "multilabel",
+      "linear_response": "eligible"
+    },
+    {
+      "dataset_id": "yeast",
+      "protocol_id": "kdis_iterative_5fold_2017",
+      "task": "multilabel",
+      "linear_response": "eligible"
+    }
+  ]
+}

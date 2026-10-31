@@ -1,23 +1,29 @@
-.. mbtr documentation master file, created by
-   sphinx-quickstart on Mon May 18 09:15:11 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+MBTR documentation
+==================
 
-Welcome to mbtr's documentation!
-================================
+MBTR fits boosted trees whose leaves may return coupled, multivariate, or
+structured regression responses, as well as shared-tree Bernoulli logits for
+binary and multilabel classification.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: User documentation
 
    introduction
-   mbtr
+   user_guide
    examples
+   performance
+   studies
+   migration
+   extending
+   mbtr
 
+The public estimators are :class:`mbtr.MBTRegressor` and
+:class:`mbtr.MBTClassifier`.  The historical :class:`mbtr.MBT` class remains
+as a transition wrapper for v0.1 code.
 
-
-Indices and tables
-==================
+Indices
+-------
 
 * :ref:`genindex`
 * :ref:`modindex`

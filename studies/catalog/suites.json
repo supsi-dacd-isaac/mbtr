@@ -1,0 +1,139 @@
+[
+  {
+    "id": "sketchboost_2022",
+    "name": "SketchBoost main benchmark",
+    "role": "primary_multivariate",
+    "task_types": ["multioutput_regression", "multilabel_classification"],
+    "dataset_count": 5,
+    "current_mbtr_coverage": "all",
+    "public_scores": "Exact per-dataset means and standard deviations are catalogued locally.",
+    "source_url": "https://github.com/sb-ai-lab/sketchboost-paper",
+    "source_revision": "e479fde7a0dd5f624fd9efd654e2d192a12d325d",
+    "assessment": "Best direct published comparison currently identified because every task has multiple outputs and the public code exposes exact metric definitions."
+  },
+  {
+    "id": "mulan_archive",
+    "name": "Mulan multi-target and multilabel datasets",
+    "role": "historical_protocol_reference",
+    "task_types": ["multioutput_regression", "multilabel_classification"],
+    "dataset_count": null,
+    "current_mbtr_coverage": "selected dense tasks",
+    "public_scores": "Selected peer-reviewed and archived scores are catalogued locally; protocols vary by publication.",
+    "source_url": "https://mulan.sourceforge.net/datasets.html",
+    "assessment": "Dated but still useful for continuity and shared-output smoke tests. Do not make it the sole evidence base."
+  },
+  {
+    "id": "uco_kdis_multilabel_2024",
+    "name": "UCO comprehensive multilabel classifier comparison",
+    "role": "primary_multilabel_expansion",
+    "task_types": ["multilabel_classification"],
+    "dataset_count": 65,
+    "current_mbtr_coverage": "not yet implemented; its official ten train/generalization partitions require a separate adapter",
+    "public_scores": "Detailed per-dataset results for 62 methods and 197 configurations are downloadable. They are not comparable to KDIS's separate five-fold archives.",
+    "source_url": "https://cib.uco.es/comp-class-perf/",
+    "assessment": "Best modern multilabel method comparison found. Pin its official mldata.zip and ten supplied partitions before importing scores."
+  },
+  {
+    "id": "kdis_iterative_5fold_2017",
+    "name": "KDIS iterative-stratified five-fold archives",
+    "role": "fixed_multilabel_internal_benchmark",
+    "task_types": ["multilabel_classification"],
+    "dataset_count": 3,
+    "current_mbtr_coverage": "Emotions, Scene, and Yeast",
+    "public_scores": "No matching public method table is currently catalogued; use these fixed archives for reproducible standard-versus-linear MBTR comparisons.",
+    "source_url": "https://www.uco.es/kdis/mllresources/",
+    "assessment": "Useful fixed multilabel folds, but distinct from both the historical Mulan holdout and the UCO 2024 ten-partition benchmark."
+  },
+  {
+    "id": "mocr_icml2025",
+    "name": "ICML 2025 multi-output conformal regression corpus",
+    "role": "primary_modern_multioutput_regression_data",
+    "task_types": ["multioutput_regression"],
+    "dataset_count": 13,
+    "current_mbtr_coverage": "all dense point-prediction datasets after preparation",
+    "public_scores": "Published scores evaluate conformal regions rather than point prediction; fresh point baselines on persisted seeded splits are required.",
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "source_revision": "6d40a669492ef1c7860568315796a99a895d9548",
+    "assessment": "Best modern public regression-corpus expansion found. Reproduce and persist its seeded splits; it modernizes the data but does not supply directly comparable RMSE baselines."
+  },
+  {
+    "id": "bogatinovski_multilabel_2022",
+    "name": "Comprehensive multilabel classification study",
+    "role": "secondary_multilabel_reference",
+    "task_types": ["multilabel_classification"],
+    "dataset_count": 42,
+    "current_mbtr_coverage": "dense subset first",
+    "public_scores": "Raw results cover 26 methods and 20 predictive and efficiency measures.",
+    "source_url": "https://mlc.ijs.si/",
+    "assessment": "Rich public scores and timings but mostly classic datasets. Reproduce PCut only for literature comparison and add validation-selected thresholds."
+  },
+  {
+    "id": "openml_cc18",
+    "name": "OpenML-CC18",
+    "role": "secondary_scalar_robustness",
+    "task_types": ["single_target_binary_classification", "single_target_multiclass_classification"],
+    "dataset_count": 72,
+    "current_mbtr_coverage": "35 binary tasks; 37 multiclass tasks require a future categorical multiclass objective",
+    "public_scores": "OpenML exposes reusable public runs but not one canonical method table with a single tuning budget.",
+    "source_url": "https://www.openml.org/s/99",
+    "assessment": "Useful standardized scalar classification breadth with fixed one-repeat stratified 10-fold splits. It contains no regression or multilabel tasks and cannot test shared-output benefit."
+  },
+  {
+    "id": "openml_ctr23",
+    "name": "OpenML-CTR23",
+    "role": "secondary_scalar_regression_robustness",
+    "task_types": ["single_target_regression"],
+    "dataset_count": 35,
+    "current_mbtr_coverage": "all tasks",
+    "public_scores": "Exact per-dataset RMSE is public for XGBoost, random forest, GAM, ridge, and a regression tree.",
+    "source_url": "https://www.openml.org/s/353",
+    "results_url": "https://github.com/slds-lmu/paper_2023_regression_suite/blob/main/results/results.csv",
+    "assessment": "Strong scalar regression reference. Pin task-provided split indices: the live tasks disagree with paper prose about holdouts for large datasets."
+  },
+  {
+    "id": "openml_amlb_classification",
+    "name": "OpenML AutoML Benchmark classification",
+    "role": "large_secondary_scalar_robustness",
+    "task_types": ["single_target_binary_classification", "single_target_multiclass_classification"],
+    "dataset_count": 71,
+    "current_mbtr_coverage": "41 binary tasks; 30 multiclass tasks unsupported",
+    "public_scores": "Controlled published results compare nine AutoML frameworks.",
+    "source_url": "https://www.openml.org/s/271",
+    "assessment": "Publication-backed but substantially heavier than CC18; use only after the small scalar studies are stable."
+  },
+  {
+    "id": "openml_amlb_regression",
+    "name": "OpenML AutoML Benchmark regression",
+    "role": "large_secondary_scalar_robustness",
+    "task_types": ["single_target_regression"],
+    "dataset_count": 33,
+    "current_mbtr_coverage": "all tasks",
+    "public_scores": "Controlled published results compare nine AutoML frameworks.",
+    "source_url": "https://www.openml.org/s/269",
+    "assessment": "Publication-backed but includes datasets up to ten million rows; not an initial MBTR study or CI target."
+  },
+  {
+    "id": "talent_tiny_2025",
+    "name": "TALENT-tiny",
+    "role": "recommended_secondary_scalar_robustness",
+    "task_types": ["single_target_binary_classification", "single_target_multiclass_classification", "single_target_regression"],
+    "dataset_count": 45,
+    "current_mbtr_coverage": "33 tasks: 15 binary and 18 regression",
+    "public_scores": "Official mean scores are public; repository tables also report standard deviations over 15 seeds.",
+    "source_url": "https://github.com/LAMDA-Tabular/TALENT",
+    "results_url": "https://6sy666.github.io/TALENT-Results/",
+    "assessment": "Preferred first modern breadth study. Pin a commit and dataset archive hash because there are no tagged releases and the archive is mutable."
+  },
+  {
+    "id": "talent_basic_2025",
+    "name": "TALENT basic benchmark",
+    "role": "expanded_secondary_scalar_robustness",
+    "task_types": ["single_target_binary_classification", "single_target_multiclass_classification", "single_target_regression"],
+    "dataset_count": 300,
+    "current_mbtr_coverage": "220 tasks: 120 binary and 100 regression",
+    "public_scores": "Official per-dataset classification and regression tables are public for many classical and neural baselines.",
+    "source_url": "https://github.com/LAMDA-Tabular/TALENT",
+    "results_url": "https://6sy666.github.io/TALENT-Results/",
+    "assessment": "Expand here only after TALENT-tiny. All targets are scalar; shared and independent MBTR are identical on these tasks."
+  }
+]

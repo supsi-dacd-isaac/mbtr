@@ -8,15 +8,16 @@
 #
 # [1] "L.Nespoli, V.Medici, K. Lopatichki, F. Sossan, Hierarchical Demand Forecasting Benchmark for the
 # Distribution Grid, PSCC 2020, accepted"
-# [2] "L.Nespoli, V.Medici, Multivariate Boosted Trees and Applications to Forecasting and Control, 2020, under review"
+# [2] "L. Nespoli, V. Medici, Multivariate Boosted Trees and Applications to Forecasting and Control, JMLR, 2022"
 #######################################################################################################################
 
 
-import numpy as np
-import mbtr.utils as ut
-from mbtr.mbtr import MBT
-from scipy.linalg import hankel
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.linalg import hankel
+
+import mbtr.utils as ut
+from mbtr import MBTRegressor
 from mbtr.utils import set_figure
 
 # --------------------------- Download and format data ----------------------------------------------------------------
@@ -24,10 +25,10 @@ from mbtr.utils import set_figure
 # from https://zenodo.org/record/3463137#.XruXbx9fiV7 if needed
 power_data = ut.load_dataset()
 
-total_power = power_data['P_mean']['all'].values.reshape(-1, 1)
+total_power = power_data["P_mean"]["all"].values.reshape(-1, 1)
 
 # down-sample it to 1 hour, bin averages
-total_power = np.mean(total_power[:len(total_power)-len(total_power) % 6].reshape(-1, 6), axis=1, keepdims=True)
+total_power = np.mean(total_power[: len(total_power) - len(total_power) % 6].reshape(-1, 6), axis=1, keepdims=True)
 
 # embed the signal in a 2-days matrix
 total_power = hankel(total_power, np.zeros((25, 1)))[:-25, :]
@@ -35,49 +36,60 @@ total_power = hankel(total_power, np.zeros((25, 1)))[:-25, :]
 # create feature matrix and target for the training and test sets
 x = total_power[:, :24]
 y = total_power[:, 24:]
-n_tr = int(len(x)*0.8)
+n_tr = int(len(x) * 0.8)
 x_tr, y_tr, x_te, y_te = [x[:n_tr, :], y[:n_tr, :], x[n_tr:, :], y[n_tr:, :]]
 
 
 # visual check on the first 50 samples of features and targets
-fig, ax = set_figure((5,4))
+fig, ax = set_figure((5, 4))
 y_min = np.min(y_tr[:50, :]) * 0.9
 y_max = np.max(y_tr[:50, :]) * 1.1
 
 for i in range(50):
     ax.cla()
-    ax.plot(np.arange(24), x_tr[i,:], label='features')
-    ax.scatter(25, y_tr[i, :], label='multivariate targets', marker='.')
-    ax.set_xlabel('step ahead [h]')
-    ax.set_ylabel('P [kW]')
-    ax.legend(loc='upper right')
+    ax.plot(np.arange(24), x_tr[i, :], label="features")
+    ax.scatter(25, y_tr[i, :], label="multivariate targets", marker=".")
+    ax.set_xlabel("step ahead [h]")
+    ax.set_ylabel("P [kW]")
+    ax.legend(loc="upper right")
     ax.set_ylim(y_min, y_max)
     plt.pause(1e-6)
-plt.close('all')
+plt.close("all")
 
 # --------------------------- Set up an MBT for quantiles prediction and train it -------------------------------------
 alphas = np.linspace(0.05, 0.95, 7)
-m = MBT(loss_type='quantile', alphas=alphas, n_boosts=40,
-        min_leaf=300, lambda_weights=1e-3).fit(x_tr, y_tr, do_plot=True)
+m = MBTRegressor(
+    objective="quantile",
+    objective_params={"alphas": alphas},
+    n_estimators=40,
+    min_samples_leaf=300,
+    l2_regularization=1e-3,
+    # The default exact refit stores empirical residual quantiles in each leaf;
+    # split search still uses the smooth logistic construction surrogate.
+    refit_leaves=True,
+).fit(x_tr, y_tr)
+
+# For quantile objectives, the recorded metric is pinball loss.
+print("Final training pinball loss:", m.evals_result_["training"][-1])
 
 # --------------------------- Predict and plot ------------------------------------------------------------------------
 
 y_hat = m.predict(x_te)
+# Quantile predictions retain explicit output and quantile axes.
+y_hat_single_output = y_hat[:, 0, :]
 
-fig, ax = set_figure((5,4))
+fig, ax = set_figure((5, 4))
 y_min = np.min(y_tr[:50, :]) * 0.9
 y_max = np.max(y_tr[:50, :]) * 1.1
-n_q = y_hat.shape[1]
-n_sa = y_te.shape[1]
+n_q = y_hat_single_output.shape[1]
 n_plot = 300
-colors = plt.get_cmap('plasma', int(n_q))
+colors = plt.get_cmap("plasma", int(n_q))
 for fl in np.arange(np.floor(n_q / 2), dtype=int):
-    q_low = np.squeeze(y_hat[:n_plot, fl])
-    q_up = np.squeeze(y_hat[:n_plot, n_q - fl - 1])
+    q_low = y_hat_single_output[:n_plot, fl]
+    q_up = y_hat_single_output[:n_plot, n_q - fl - 1]
     x = np.arange(len(q_low))
-    ax.fill_between(x, q_low, q_up, color=colors(fl), alpha=0.1 + 0.6*fl/n_q, linewidth=0.0)
+    ax.fill_between(x, q_low, q_up, color=colors(fl), alpha=0.1 + 0.6 * fl / n_q, linewidth=0.0)
 plt.plot(y_te[:n_plot], linewidth=2)
-plt.xlabel('step [h]')
-plt.ylabel('P [kW]')
-plt.title('Quantiles on first 300 samples')
-
+plt.xlabel("step [h]")
+plt.ylabel("P [kW]")
+plt.title("Quantiles on first 300 samples")

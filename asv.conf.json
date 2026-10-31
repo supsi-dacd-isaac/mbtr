@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "project": "mbtr",
+  "project_url": "https://github.com/supsi-dacd-isaac/mbtr",
+  "repo": ".",
+  "branches": [
+    "master"
+  ],
+  "show_commit_url": "https://github.com/supsi-dacd-isaac/mbtr/commit/",
+  "benchmark_dir": "benchmarks",
+  "results_dir": ".asv/results",
+  "html_dir": ".asv/html",
+  "env_dir": ".asv/env",
+  "environment_type": "virtualenv",
+  "build_command": [
+    "PIP_NO_BUILD_ISOLATION=0 python -m build",
+    "python -m pip wheel --no-deps -w {build_cache_dir} {build_dir}"
+  ],
+  "pythons": [
+    "3.10",
+    "3.12"
+  ],
+  "matrix": {}
+}

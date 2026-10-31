@@ -1,0 +1,137 @@
+[build-system]
+requires = ["setuptools>=77", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mbtr"
+dynamic = ["version"]
+description = "Multivariate boosted tree regressors and multilabel classifiers"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Lorenzo Nespoli", email = "lorenzo.nespoli@supsi.ch" },
+]
+keywords = [
+  "gradient boosting",
+  "machine learning",
+  "multilabel classification",
+  "multivariate regression",
+  "trees",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "Intended Audience :: Science/Research",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+  "numpy>=1.23",
+  "scipy>=1.9",
+]
+
+[project.optional-dependencies]
+fast = [
+  "numba>=0.59",
+]
+plot = [
+  "matplotlib>=3.7",
+  "networkx>=3.0",
+  "seaborn>=0.12",
+]
+examples = [
+  "lightgbm>=4.0",
+  "pandas>=2.0",
+  "requests>=2.31",
+  "tqdm>=4.65",
+]
+test = [
+  "hypothesis>=6.100",
+  "pytest>=8.0",
+  "pytest-cov>=5.0",
+]
+docs = [
+  "sphinx>=7.2",
+  "sphinx-rtd-theme>=2.0",
+]
+benchmark = [
+  "asv>=0.6",
+  "psutil>=5.9",
+  "pyperf>=2.7",
+]
+studies = [
+  "openml==0.15.1",
+  "pandas>=2.0,<3",
+  "scikit-learn>=1.3,<2",
+]
+external-boosters = [
+  "catboost>=1.2,<2",
+  "lightgbm>=4.0,<5",
+  "xgboost>=2.0,<4",
+]
+mocr-study = [
+  "numpy==2.2.2",
+  "pandas==2.2.3",
+  "torch==2.6.0",
+]
+dev = [
+  "build>=1.2",
+  "mypy>=1.10",
+  "ruff>=0.5",
+  "twine>=5.1",
+]
+
+[project.urls]
+Documentation = "https://mbtr.readthedocs.io/"
+Issues = "https://github.com/supsi-dacd-isaac/mbtr/issues"
+Repository = "https://github.com/supsi-dacd-isaac/mbtr"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["mbtr*"]
+
+[tool.setuptools.package-data]
+mbtr = ["splash.txt"]
+
+[tool.setuptools.dynamic]
+version = { attr = "mbtr._version.__version__" }
+
+[tool.pytest.ini_options]
+addopts = "--strict-config --strict-markers"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_tests.py"]
+filterwarnings = [
+  "error::RuntimeWarning:mbtr.*",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["mbtr"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.10"
+check_untyped_defs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_ignores = true

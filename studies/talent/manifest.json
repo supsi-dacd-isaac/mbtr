@@ -1,0 +1,42 @@
+{
+  "repository": "https://github.com/LAMDA-Tabular/TALENT",
+  "source_revision": null,
+  "source_revision_policy": "Set an immutable Git commit before running; tags are not available.",
+  "dataset_archive_sha256": null,
+  "dataset_archive_policy": "Fill before running because the Google Drive archive is mutable and has no DOI version.",
+  "suites": [
+    {
+      "id": "talent-tiny",
+      "tasks": 45,
+      "binary_tasks": 15,
+      "multiclass_tasks": 12,
+      "regression_tasks": 18,
+      "supported_now": 33
+    },
+    {
+      "id": "talent-basic",
+      "tasks": 300,
+      "binary_tasks": 120,
+      "multiclass_tasks": 80,
+      "regression_tasks": 100,
+      "supported_now": 220
+    }
+  ],
+  "paper_protocol": {
+    "train_fraction": 0.64,
+    "validation_fraction": 0.16,
+    "test_fraction": 0.2,
+    "optuna_trials_per_method_dataset": 100,
+    "seeds": 15,
+    "primary_classification_metric": "accuracy",
+    "primary_regression_metric": "rmse",
+    "numeric_preprocessing": "training-mean imputation and standardization",
+    "categorical_preprocessing": "training-fitted ordinal encoding with a missing token; one-hot for methods without native categorical support except CatBoost"
+  },
+  "published_results": {
+    "binary": "https://github.com/LAMDA-Tabular/TALENT/blob/main/results/cls_bin.md",
+    "multiclass": "https://github.com/LAMDA-Tabular/TALENT/blob/main/results/cls_multi.md",
+    "regression": "https://github.com/LAMDA-Tabular/TALENT/blob/main/results/regression.md",
+    "portal": "https://6sy666.github.io/TALENT-Results/"
+  }
+}

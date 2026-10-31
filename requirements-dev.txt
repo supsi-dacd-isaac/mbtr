@@ -1,0 +1,1 @@
+-e .[benchmark,dev,docs,examples,fast,plot,test]

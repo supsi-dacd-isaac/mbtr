@@ -1,0 +1,178 @@
+[
+  {
+    "id": "rf1",
+    "name": "River Flow 1",
+    "task": "multioutput_regression",
+    "n_samples": 9125,
+    "n_features": 64,
+    "n_outputs": 8,
+    "source_url": "https://www.openml.org/d/41483",
+    "representation": "dense",
+    "notes": "Chronological hydrological data. Preserve the protocol-specific temporal split when reproducing old Mulan results."
+  },
+  {
+    "id": "scm20d",
+    "name": "Supply Chain Management 20 days",
+    "task": "multioutput_regression",
+    "n_samples": 8966,
+    "n_features": 61,
+    "n_outputs": 16,
+    "source_url": "https://www.openml.org/d/41486",
+    "representation": "dense",
+    "notes": "Synthetic supply-chain simulation with correlated targets."
+  },
+  {
+    "id": "mediamill",
+    "name": "Mediamill",
+    "task": "multilabel_classification",
+    "n_samples": 43907,
+    "n_features": 120,
+    "n_outputs": 101,
+    "source_url": "https://drive.google.com/file/d/0B3lPMIHmG6vGY3B4TXRmZnZBTkk/view?resourcekey=0-Hv7nA6NTsIJshWk2gJwTYw",
+    "representation": "dense",
+    "notes": "For direct SketchBoost comparability, use the pinned code's Extreme Classification Repository ZIP and first predefined split column; its counts match the familiar Mulan split."
+  },
+  {
+    "id": "delicious",
+    "name": "Delicious",
+    "task": "multilabel_classification",
+    "n_samples": 16105,
+    "n_features": 500,
+    "n_outputs": 983,
+    "source_url": "https://drive.google.com/file/d/0B3lPMIHmG6vGdG1jZ19VS2NWRVU/view?resourcekey=0-viF3jLCBFuBSDjdlKL_32g",
+    "representation": "sparse_source_dense_model",
+    "notes": "For direct SketchBoost comparability, use the pinned code's Extreme Classification Repository ZIP and first predefined split column. A dense conversion must be reported because it affects MBTR memory use."
+  },
+  {
+    "id": "moa",
+    "name": "Mechanisms of Action",
+    "task": "multilabel_classification",
+    "n_samples": 23814,
+    "n_features": 875,
+    "n_outputs": 206,
+    "source_url": "https://www.kaggle.com/competitions/lish-moa",
+    "representation": "mixed_source_dense_model",
+    "notes": "SketchBoost uses the scored-target training table. Record categorical encoding and Kaggle data terms in every prepared artifact."
+  },
+  {
+    "id": "emotions",
+    "name": "Emotions",
+    "task": "multilabel_classification",
+    "n_samples": 593,
+    "n_features": 72,
+    "n_outputs": 6,
+    "source_url": "https://mulan.sourceforge.net/datasets-mlc.html",
+    "representation": "dense",
+    "notes": "Official fixed split: 391 train and 202 test rows. Suitable as a smoke study rather than a modern headline benchmark."
+  },
+  {
+    "id": "scene",
+    "name": "Scene",
+    "task": "multilabel_classification",
+    "n_samples": 2407,
+    "n_features": 294,
+    "n_outputs": 6,
+    "source_url": "https://mulan.sourceforge.net/datasets-mlc.html",
+    "representation": "dense",
+    "notes": "Official fixed split: 1211 train and 1196 test rows. Suitable as a smoke study rather than a modern headline benchmark."
+  },
+  {
+    "id": "yeast",
+    "name": "Yeast",
+    "task": "multilabel_classification",
+    "n_samples": 2417,
+    "n_features": 103,
+    "n_outputs": 14,
+    "source_url": "https://mulan.sourceforge.net/datasets-mlc.html",
+    "representation": "dense",
+    "notes": "Official fixed split: 1500 train and 917 test rows. Suitable as a smoke study rather than a modern headline benchmark."
+  },
+  {
+    "id": "mocr_households",
+    "name": "Households",
+    "task": "multioutput_regression",
+    "n_samples": 7207,
+    "n_features": 14,
+    "n_outputs": 4,
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "representation": "dense",
+    "notes": "Modern ICML 2025 multi-output conformal-regression corpus; reproduce and persist its seeded row indices but evaluate point prediction separately."
+  },
+  {
+    "id": "mocr_house",
+    "name": "House",
+    "task": "multioutput_regression",
+    "n_samples": 21613,
+    "n_features": 17,
+    "n_outputs": 2,
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "representation": "dense",
+    "notes": "Bundled with the ICML 2025 multi-output conformal-regression experiments."
+  },
+  {
+    "id": "mocr_bio",
+    "name": "Bio",
+    "task": "multioutput_regression",
+    "n_samples": 45730,
+    "n_features": 8,
+    "n_outputs": 2,
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "representation": "dense",
+    "notes": "Bundled with the ICML 2025 multi-output conformal-regression experiments."
+  },
+  {
+    "id": "mocr_blog_data",
+    "name": "Blog data",
+    "task": "multioutput_regression",
+    "n_samples": 52397,
+    "n_features": 269,
+    "n_outputs": 2,
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "representation": "dense",
+    "notes": "Bundled with the ICML 2025 experiments. The preprocessed corpus has 52,397 rows; every run draws a seed-specific 50,000-row subset before splitting."
+  },
+  {
+    "id": "mocr_taxi",
+    "name": "Taxi",
+    "task": "multioutput_regression",
+    "n_samples": 61286,
+    "n_features": 4,
+    "n_outputs": 2,
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "representation": "dense",
+    "notes": "Bundled with the ICML 2025 experiments. The preprocessed corpus has 61,286 rows; every run draws a seed-specific 50,000-row subset before splitting."
+  },
+  {
+    "id": "mocr_meps19",
+    "name": "MEPS 19",
+    "task": "multioutput_regression",
+    "n_samples": null,
+    "n_features": 137,
+    "n_outputs": 2,
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "representation": "dense_external",
+    "notes": "Approximately 16k-18k rows. Not bundled; record the external source and checksum before use."
+  },
+  {
+    "id": "mocr_meps20",
+    "name": "MEPS 20",
+    "task": "multioutput_regression",
+    "n_samples": null,
+    "n_features": 137,
+    "n_outputs": 2,
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "representation": "dense_external",
+    "notes": "Approximately 16k-18k rows. Not bundled; record the external source and checksum before use."
+  },
+  {
+    "id": "mocr_meps21",
+    "name": "MEPS 21",
+    "task": "multioutput_regression",
+    "n_samples": null,
+    "n_features": 137,
+    "n_outputs": 2,
+    "source_url": "https://github.com/Vekteur/multi-output-conformal-regression",
+    "representation": "dense_external",
+    "notes": "Approximately 16k-18k rows. Not bundled; record the external source and checksum before use."
+  }
+]

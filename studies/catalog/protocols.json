@@ -1,0 +1,100 @@
+[
+  {
+    "id": "sketchboost_random_holdout_cv5_2022",
+    "datasets": ["rf1", "scm20d", "moa"],
+    "source_url": "https://papers.nips.cc/paper_files/paper/2022/file/a36c3dbe676fa8445715a31a90c66ab3-Supplemental-Conference.pdf",
+    "split": "Seed-42 random 80/20 train/test split; shuffle the 80% partition into five seed-42 folds; each fitted fold model is evaluated on the same test partition.",
+    "selection": "The published search first evaluated a default, then requested up to 30 Optuna trials for CatBoost/XGBoost and 10 for TabNet, selecting by mean validation loss across the five folds. CatBoost/XGBoost were then refit at learning rate 0.015 with at most 20,000 trees and validation-based early stopping; that refit does not apply to TabNet. A 32-hour Optuna timeout made realized complete-candidate counts dataset/method dependent: RF1 and SCM20D each had CatBoost=31, XGBoost=31, TabNet=11 including the default; MoA had CatBoost=10, XGBoost=31, TabNet=10. SketchBoost inherited CatBoost's selected structural parameters and used the same lower-learning-rate refit. Its reduced-dimension strategy summaries sort candidate dimensions by mean test loss, so those strategy headline values are test-selected; the full-output and baseline rows do not have that dimension-selection leak. The clean fixed MBTR comparison instead caps each standard and linear-response fit independently at 1,000 trees with learning rate 0.05 and patience 50 on the held-out training fold, retains its validation-best iteration, freezes the model, and evaluates the common test set once.",
+    "metrics": {
+      "multioutput_regression": "global_rmse",
+      "multilabel_classification": "binary_cross_entropy_clip_1e-7"
+    },
+    "expected_runs": 5,
+    "expected_run_ids": ["0", "1", "2", "3", "4"],
+    "run_axis": "training_fold",
+    "aggregation": "Mean and sample standard deviation over the five fitted fold models; this is not outer cross-validation."
+  },
+  {
+    "id": "sketchboost_official_holdout_cv5_2022",
+    "datasets": ["mediamill", "delicious"],
+    "source_url": "https://papers.nips.cc/paper_files/paper/2022/file/a36c3dbe676fa8445715a31a90c66ab3-Supplemental-Conference.pdf",
+    "split": "Pinned SketchBoost Extreme Classification Repository train/test indices (first of ten predefined split columns); shuffle the training partition into five seed-42 folds; each fitted fold model is evaluated on the same fixed test partition.",
+    "selection": "The published search first evaluated a default, then requested up to 30 Optuna trials for CatBoost/XGBoost and 10 for TabNet, selecting by mean validation loss across the five folds. CatBoost/XGBoost were then refit at learning rate 0.015 with at most 20,000 trees and validation-based early stopping; that refit does not apply to TabNet. Complete-candidate counts including the default were Delicious CatBoost=5/XGBoost=10/TabNet=11 and Mediamill CatBoost=8/XGBoost=31/TabNet=11 because the 32-hour Optuna timeout truncated heavy searches. SketchBoost inherited CatBoost's selected structural parameters and used the same lower-learning-rate refit. Its reduced-dimension strategy summaries sort candidate dimensions by mean test loss, so those strategy headline values are test-selected; the full-output and baseline rows do not have that dimension-selection leak. The clean fixed MBTR comparison instead caps each standard and linear-response fit independently at 1,000 trees with learning rate 0.05 and patience 50 on the held-out training fold, retains its validation-best iteration, freezes the model, and evaluates the common test set once.",
+    "metrics": {
+      "multilabel_classification": "binary_cross_entropy_clip_1e-7"
+    },
+    "expected_runs": 5,
+    "expected_run_ids": ["0", "1", "2", "3", "4"],
+    "run_axis": "training_fold",
+    "aggregation": "Mean and sample standard deviation over the five fitted fold models; this is not outer cross-validation."
+  },
+  {
+    "id": "mulan_arxiv_v4_holdout_2014",
+    "datasets": ["rf1", "scm20d"],
+    "source_url": "https://arxiv.org/abs/1211.6581v4",
+    "split": "Historical paper protocol: RF1 uses a chronological 4108/5017 split and SCM20D uses a fixed 7463/1503 split.",
+    "selection": "Follow the paper's method-specific settings; use only as historical context for new experiments.",
+    "metrics": {
+      "multioutput_regression": "average_relative_rmse"
+    },
+    "expected_runs": 1,
+    "expected_run_ids": ["0"],
+    "run_axis": "fixed_holdout",
+    "aggregation": "Paper values were printed as aRRMSE multiplied by 100; catalog values are divided by 100."
+  },
+  {
+    "id": "kbmf_fixed_holdout_2013",
+    "datasets": ["emotions", "scene", "yeast"],
+    "source_url": "https://proceedings.mlr.press/v28/gonen13a.html",
+    "split": "Official Mulan fixed train/test files.",
+    "selection": "Method-specific published settings; rounded table values are protocol references rather than regression-test thresholds.",
+    "metrics": {
+      "multilabel_classification": "hamming_loss"
+    },
+    "expected_runs": 1,
+    "expected_run_ids": ["0"],
+    "run_axis": "fixed_holdout",
+    "aggregation": "One published value per method and dataset rounded to three decimals."
+  },
+  {
+    "id": "kdis_iterative_5fold_2017",
+    "datasets": ["emotions", "scene", "yeast"],
+    "source_url": "https://www.uco.es/kdis/mllresources/",
+    "split": "Use the downloaded KDIS iterative-stratified five-fold partitions exactly and record the archive checksum. Expand the dataset list only through a separately reviewed dense-subset manifest.",
+    "selection": "The current KDIS artifacts contain only outer train/test folds, so the validation-early-stopped MBTR protocol is not applicable. The outer test fold must not select an iteration, threshold, feature set, or hyperparameter. A fixed-tree diagnostic must disable early stopping explicitly and be labelled separately. Any validation-based early stopping or tuning requires a reproducible inner split inside each outer training fold and defines a distinct nested protocol; the fixed 0.5 label threshold remains part of this catalog protocol.",
+    "metrics": {
+      "multilabel_classification": "binary_cross_entropy_plus_fixed_threshold_0.5_subset_accuracy_hamming_loss_example_jaccard_example_f1_macro_f1_micro_f1"
+    },
+    "expected_runs": 5,
+    "expected_run_ids": ["0", "1", "2", "3", "4"],
+    "run_axis": "outer_fold",
+    "aggregation": "Report every outer fold plus mean and sample standard deviation. This fixed KDIS archive protocol is not the UCO 2024 comparison protocol, which uses ten supplied train/generalization partitions."
+  },
+  {
+    "id": "mocr_point_prediction_2025",
+    "datasets": [
+      "mocr_households",
+      "mocr_house",
+      "mocr_bio",
+      "mocr_blog_data",
+      "mocr_taxi",
+      "mocr_meps19",
+      "mocr_meps20",
+      "mocr_meps21"
+    ],
+    "source_url": "https://proceedings.mlr.press/v267/dheur25a.html",
+    "source_revision": "6d40a669492ef1c7860568315796a99a895d9548",
+    "run_ids": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "source_seeds": [2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009],
+    "split": "Reproduce the pinned upstream seeded splitter. Map run_id to source_seed=2000+run_id. Start from train/validation/calibration/test ratios 0.4/0.1/0.3/0.2; cap calibration at 2048 rows; distribute calibration excess equally over the other non-empty partitions; truncate sizes to integers and assign the remainder to test; then use torch random_split with the source seed. Persist the generated row indices. Preserve the upstream seed-dependent subsampling cap when reproducing its corpus.",
+    "preprocessing": "Fit the upstream standardization of X and Y on training rows only. Train the matching standardized-target study and inverse-transform predictions for raw-unit metrics; label both scales explicitly.",
+    "selection": "Select point-prediction hyperparameters and boosting iterations on validation rows only. For the fixed MBTR comparison, cap each standard and linear-response fit independently at 1,000 trees with learning rate 0.05 and patience 50, retain its validation-best iteration, freeze it, and evaluate test rows once. Leave calibration rows unused for point prediction and fit shared MBTR plus independent and external baselines on identical persisted indices.",
+    "metrics": {
+      "multioutput_regression": "global_rmse_average_relative_rmse_and_mean_target_r2"
+    },
+    "expected_runs": 10,
+    "expected_run_ids": ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+    "run_axis": "seed",
+    "aggregation": "Report every run ID plus mean and standard deviation over run IDs 0-9 (source seeds 2000-2009). The paper's conformal coverage and region-size scores are not point-prediction baselines."
+  }
+]

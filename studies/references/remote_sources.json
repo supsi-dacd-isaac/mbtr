@@ -1,0 +1,71 @@
+[
+  {
+    "id": "openml_ctr23_results",
+    "suite_id": 353,
+    "revision": "eb9c32031d5a000dd7cac51c55f03dcc546d3d7d",
+    "format": "ctr23_csv_v1",
+    "schema_version": 1,
+    "artifacts": {
+      "results": {
+        "filename": "results.csv",
+        "url": "https://raw.githubusercontent.com/slds-lmu/paper_2023_regression_suite/eb9c32031d5a000dd7cac51c55f03dcc546d3d7d/results/results.csv",
+        "sha256": "3d68cac3c94f898e5df753db33cd7a25bcc568625e5a7d83f002b3520ff7d58d"
+      },
+      "task_ids": {
+        "filename": "ids.csv",
+        "url": "https://raw.githubusercontent.com/slds-lmu/paper_2023_regression_suite/eb9c32031d5a000dd7cac51c55f03dcc546d3d7d/ids.csv",
+        "sha256": "1f8a701fcf913481d390c862891ef8f40df5df843f0c1210e48c99f8d2d1b381"
+      }
+    },
+    "expected_rows": 175,
+    "methods": {
+      "cv_glmnet": "Ridge Regression",
+      "gam": "GAM",
+      "ranger": "Random Forest",
+      "rpart": "Regression Tree",
+      "xgboost": "XGBoost"
+    },
+    "task_map": [
+      {"source_task_name": "Moneyball", "openml_task_id": 361616},
+      {"source_task_name": "abalone", "openml_task_id": 361234},
+      {"source_task_name": "airfoil_self_noise", "openml_task_id": 361235},
+      {"source_task_name": "auction_verification", "openml_task_id": 361236},
+      {"source_task_name": "concrete_compressive_strength", "openml_task_id": 361237},
+      {"source_task_name": "energy_efficiency", "openml_task_id": 361617},
+      {"source_task_name": "forest_fires", "openml_task_id": 361618},
+      {"source_task_name": "physiochemical_protein", "openml_task_id": 361241},
+      {"source_task_name": "superconductivity", "openml_task_id": 361242},
+      {"source_task_name": "geographical_origin_of_music", "openml_task_id": 361243},
+      {"source_task_name": "solar_flare", "openml_task_id": 361244},
+      {"source_task_name": "student_performance_por", "openml_task_id": 361619},
+      {"source_task_name": "naval_propulsion_plant", "openml_task_id": 361247},
+      {"source_task_name": "QSAR_fish_toxicity", "openml_task_id": 361621},
+      {"source_task_name": "white_wine", "openml_task_id": 361249},
+      {"source_task_name": "red_wine", "openml_task_id": 361250},
+      {"source_task_name": "grid_stability", "openml_task_id": 361251},
+      {"source_task_name": "video_transcoding", "openml_task_id": 361252},
+      {"source_task_name": "wave_energy", "openml_task_id": 361253},
+      {"source_task_name": "sarcos", "openml_task_id": 361254},
+      {"source_task_name": "california_housing", "openml_task_id": 361255},
+      {"source_task_name": "cpu_activity", "openml_task_id": 361256},
+      {"source_task_name": "diamonds", "openml_task_id": 361257},
+      {"source_task_name": "kin8nm", "openml_task_id": 361258},
+      {"source_task_name": "pumadyn32nh", "openml_task_id": 361259},
+      {"source_task_name": "miami_housing", "openml_task_id": 361260},
+      {"source_task_name": "cps88wages", "openml_task_id": 361261},
+      {"source_task_name": "space_ga", "openml_task_id": 361623},
+      {"source_task_name": "socmob", "openml_task_id": 361264},
+      {"source_task_name": "kings_county", "openml_task_id": 361266},
+      {"source_task_name": "brazilian_houses", "openml_task_id": 361267},
+      {"source_task_name": "fps_benchmark", "openml_task_id": 361268},
+      {"source_task_name": "health_insurance", "openml_task_id": 361269},
+      {"source_task_name": "cars", "openml_task_id": 361622},
+      {"source_task_name": "fifa", "openml_task_id": 361272}
+    ],
+    "metric": "mean_resample_rmse",
+    "comparison_tier": "context_only",
+    "license": "LGPL-3.0",
+    "source_url": "https://github.com/slds-lmu/paper_2023_regression_suite",
+    "notes": "Published arithmetic means of official-resampling RMSE. The values are context only unless preprocessing and tuning also match the paper. XGBoost uses nested 500-evaluation random search per outer fit; ridge selects its penalty by internal cross-validation; the other methods use different fixed or model-internal policies."
+  }
+]

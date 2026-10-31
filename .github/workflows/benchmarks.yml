@@ -1,0 +1,59 @@
+name: Scheduled benchmarks
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: scheduled-benchmarks
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      MBTR_BENCHMARK_PROFILE: full
+      OPENBLAS_NUM_THREADS: "1"
+      OMP_NUM_THREADS: "1"
+      MKL_NUM_THREADS: "1"
+      NUMBA_NUM_THREADS: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Install benchmark dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install ".[benchmark,fast]"
+      - uses: actions/cache/restore@v4
+        with:
+          path: .asv/results
+          key: asv-results-${{ runner.os }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            asv-results-${{ runner.os }}-
+      - name: Record runner metadata
+        run: python -m asv machine --yes --machine github-hosted-ubuntu
+      - name: Run the full scaling matrix
+        run: python -m asv run -E existing --machine github-hosted-ubuntu --set-commit-hash "${{ github.sha }}" --record-samples
+      - name: Build benchmark report
+        run: python -m asv publish
+      - uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: .asv/results
+          key: asv-results-${{ runner.os }}-${{ github.run_id }}-${{ github.run_attempt }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-results-${{ github.run_id }}
+          path: |
+            .asv/results/
+            .asv/html/
+          retention-days: 90
